@@ -1,0 +1,51 @@
+# Audio files (too large for git)
+*.m4a
+*.mp3
+*.wav
+*.aac
+*.flac
+*.ogg
+audio_files/
+
+# Sensitive configuration
+config/config.py
+*.env
+
+# Processing data & logs
+processed_files.json
+logs/
+reports/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Notion cache
+.notion_cache/
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
