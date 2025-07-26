@@ -1,9 +1,10 @@
 """
-Test suite for Voice Memo Processor
+Test suite for VoiceVault
 
 This package contains tests for all components:
-- Transcription functionality
-- Claude AI integration
-- Notion API integration
-- File processing workflows
+- Voice memo transcription functionality
+- Claude AI integration and intelligent tagging
+- Notion API integration and data organization
+- File processing workflows and batch operations
+- Human-in-the-loop training systems
 """

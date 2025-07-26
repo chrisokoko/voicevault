@@ -1,4 +1,4 @@
-# Usage Guide
+# VoiceVault Usage Guide
 
 ## Basic Usage
 

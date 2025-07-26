@@ -7,13 +7,13 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
     requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
 
 setup(
-    name="voice-memo-processor",
+    name="voicevault",
     version="1.0.0",
-    author="Voice Memo Processor",
-    description="AI-powered voice memo processing system with Claude integration and Notion organization",
+    author="VoiceVault",
+    description="Transform scattered voice memos into an organized, searchable vault of personal insights with AI-powered transcription and intelligent categorization",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/[username]/voice-memo-processor",
+    url="https://github.com/[username]/voicevault",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -32,7 +32,7 @@ setup(
     install_requires=requirements,
     entry_points={
         "console_scripts": [
-            "voice-memo-processor=main:main",
+            "voicevault=main:main",
         ],
     },
     extras_require={

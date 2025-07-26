@@ -1,8 +1,31 @@
-# Voice Memo Processor 🎙️
+# VoiceVault 🎙️
 
-An optimized Python system that automatically processes voice memo files by transcribing them, generating intelligent tags, and uploading to Notion with advanced performance optimization.
+**Transform hundreds of scattered voice memos into an organized, searchable vault of personal insights.**
 
-## ✨ Features
+Have hundreds of voice memos on your phone that were useful when you recorded them, but now they're just digital clutter? VoiceVault solves this by automatically transcribing, categorizing, and intelligently organizing your voice notes in Notion - turning audio chaos into curated, filterable knowledge.
+
+## 🎯 **The Problem VoiceVault Solves**
+
+You probably have hundreds of voice notes on your phone. They were captured for a reason - insights, ideas, reflections, reminders. But now:
+
+- **It would take hundreds of hours** to listen through them all
+- **They're impossible to search** or find when you need them  
+- **Context is lost** - you can't remember what each one contains
+- **They're not organized** - no categories, tags, or structure
+- **They're trapped on your phone** - not integrated with your knowledge system
+
+## 🚀 **The VoiceVault Solution**
+
+VoiceVault **gets your voice memos out of audio prison** and into your Notion workspace where they become:
+
+✅ **Fully transcribed** with AI-improved readability  
+✅ **Intelligently categorized** across 5 tag dimensions  
+✅ **Searchable and filterable** by theme, content type, emotion, topics  
+✅ **Contextually organized** with summaries and metadata  
+✅ **Smart deletion flagging** - automatically identifies content to review/delete  
+✅ **Human-trainable** - learns from your preferences to improve over time  
+
+## ✨ Core Features
 
 ### 🎯 Core Processing
 - **Advanced Audio Transcription**: Whisper AI for long files, Mac Speech Recognition for short files, with intelligent chunking for 10+ minute recordings
@@ -28,7 +51,7 @@ An optimized Python system that automatically processes voice memo files by tran
 
 ### 1. Install Dependencies
 ```bash
-cd voice-memo-processor
+cd voicevault
 pip install -r requirements.txt
 brew install ffmpeg  # On macOS
 ```
@@ -98,12 +121,29 @@ python3 main.py --folder audio_files --performance-report my_session.json
 3. **Successfully processed files** automatically move to `audio_files/success/`
 4. **Track progress** by seeing what's left in `audio_files/` vs moved to `success/`
 
+## 🔄 **The VoiceVault Workflow**
+
+### Phase 1: Bulk Processing
+1. **Import your voice memos** into the `audio_files/` folder
+2. **Run VoiceVault** - it processes everything automatically with parallel threads
+3. **Everything goes to Notion** with transcripts, tags, and smart deletion flags
+
+### Phase 2: Human Training (Optional but Powerful)
+1. **Review ~50 voice memos** in your Notion database
+2. **Tag them** as "definitely keep", "definitely delete", or "needs review"
+3. **VoiceVault learns** from your decisions and re-processes everything with better accuracy
+
+### Phase 3: Curated Knowledge Vault
+1. **Filter and search** your voice memos by any category
+2. **Delete what you don't need** with confidence
+3. **Keep your insights** organized and accessible forever
+
 ## 🚀 Built-in Optimization & Performance
 
-**Every run now automatically includes:**
+**Every run automatically includes:**
 - ✅ **Intelligent API Caching**: 50%+ cost reduction through smart caching
 - ✅ **Performance Monitoring**: Real-time processing speed and efficiency tracking
-- ✅ **Cost Optimization**: Automatic API savings with detailed reporting
+- ✅ **Parallel Processing**: 20+ threads for maximum speed
 - ✅ **Human-readable Reports**: Beautiful console output with key metrics
 
 **No separate programs needed** - everything is optimized and monitored automatically!
@@ -167,7 +207,7 @@ python3 optimized_analyze_tags.py --map-taxonomy --batch-size 20
 ## 🔧 System Architecture
 
 ```
-voice-memo-processor/
+voicevault/
 ├── main.py                      # 🚀 UNIFIED OPTIMIZED PROCESSOR
 │                               # ✅ Built-in API caching & optimization
 │                               # ✅ Integrated performance monitoring

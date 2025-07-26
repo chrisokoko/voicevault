@@ -1,4 +1,4 @@
-# Setup Guide
+# VoiceVault Setup Guide
 
 ## Prerequisites
 
@@ -27,8 +27,8 @@ Download from [https://ffmpeg.org/download.html](https://ffmpeg.org/download.htm
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/[username]/voice-memo-processor.git
-cd voice-memo-processor
+git clone https://github.com/[username]/voicevault.git
+cd voicevault
 ```
 
 2. **Install Python dependencies:**
@@ -53,7 +53,7 @@ Open `config/config.py` and add your API keys:
 
 1. Go to [https://www.notion.so/my-integrations](https://www.notion.so/my-integrations)
 2. Click "New integration"
-3. Give it a name like "Voice Memo Processor"
+3. Give it a name like "VoiceVault"
 4. Select the workspace
 5. Copy the "Internal Integration Token"
 
