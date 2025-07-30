@@ -1,8 +1,8 @@
 # VoiceVault 🎙️
 
-**Transform hundreds of scattered voice memos into an organized, searchable vault of personal insights with intelligent hierarchical taxonomy.**
+**Transform hundreds of scattered voice memos into an organized, searchable vault of personal insights with intelligent data-driven taxonomy.**
 
-Have hundreds of voice memos on your phone that were useful when you recorded them, but now they're just digital clutter? VoiceVault solves this by automatically transcribing, categorizing, and intelligently organizing your voice notes in Notion - turning audio chaos into curated, filterable knowledge.
+Turn your audio chaos into curated, searchable knowledge! VoiceVault automatically transcribes, categorizes, and intelligently organizes your voice notes in Notion using AI-powered analysis and data-driven taxonomy generation.
 
 ## 🎯 **The Problem VoiceVault Solves**
 
@@ -19,46 +19,15 @@ You probably have hundreds of voice notes on your phone. They were captured for 
 VoiceVault **gets your voice memos out of audio prison** and into your Notion workspace where they become:
 
 ✅ **Fully transcribed** with AI-improved readability  
-✅ **Intelligently categorized** with hierarchical taxonomy system  
-✅ **Searchable and filterable** by Life Areas and Topics  
+✅ **Intelligently categorized** with data-driven taxonomy system  
+✅ **Searchable and filterable** by multiple Life Areas and Topics  
 ✅ **Contextually organized** with summaries and metadata  
 ✅ **Smart deletion flagging** - automatically identifies content to review/delete  
-✅ **Data-driven taxonomy** - builds categories from your actual content, not theories  
+✅ **Multiple category assignment** - each memo can have multiple relevant life areas and topics
 
-## ✨ New: Hierarchical Taxonomy System
+## ✨ Service-Based Architecture
 
-VoiceVault now features a **revolutionary 4-phase taxonomy system** that transforms your scattered voice memos into an organized knowledge vault:
-
-### 🏗️ **4-Phase Processing Pipeline**
-
-**Phase 1: Data Extraction** (`get_pages_and_tags.py`)
-- Extracts all voice memos and existing tags from Notion
-- Clean input/output interface
-- Rate-limited API calls for reliability
-
-**Phase 2: Taxonomy Building** (`classify_tags.py`)  
-- Uses Claude AI to analyze your actual tags
-- Builds data-driven Life Areas and Topics from your content
-- Creates 12 Life Areas and 25+ Topics based on your real usage
-
-**Phase 3: Intelligent Classification** (`claude_taxonomy_classifier.py`)
-- Claude AI classifies each voice memo using the custom taxonomy
-- Assigns multiple Life Areas and Topics per memo
-- Efficient batch processing with result caching
-
-**Phase 4: Notion Integration** (`update_notion_taxonomy.py`)
-- Updates Notion database with hierarchical classifications
-- Creates "Life Area" and "Topic" columns for filtering
-- Enables finding 20+ related memos instead of 1-2 exact matches
-
-### 🎯 **Taxonomy Benefits**
-
-**Before**: "I have a tag called 'spiritual practice' with 2 voice memos"
-**After**: "I can filter by Life Area 'Spiritual & Ceremonial' and find 25+ related memos across multiple topics"
-
-**Multi-category Assignment**: Each voice memo gets multiple relevant Life Areas and Topics
-**Hierarchical Filtering**: Start broad (Life Areas) then narrow down (Topics)
-**Content Discovery**: Find patterns and connections across your voice memo collection
+VoiceVault features a **clean service-based architecture** that transforms your scattered voice memos into an organized knowledge vault through automated processing and intelligent categorization.
 
 ## 🚀 Quick Start
 
@@ -88,45 +57,20 @@ AUDIO_FOLDER = "./audio_files"  # Default folder for your voice notes
 2. Copy the integration token to your config
 3. Share your database with the integration (or let the script create one)
 
-## 🎙️ **Two Processing Systems**
+## 🎙️ **Processing Your Voice Memos**
 
-### 📊 **Option 1: Hierarchical Taxonomy System (Recommended)**
+### 🚀 **Main Processing**
 
-Transform your voice memos into an organized knowledge vault with intelligent categorization:
-
-```bash
-# Phase 1: Extract all voice memos and tags
-python3 src/get_pages_and_tags.py --output data.json
-
-# Phase 2: Build custom taxonomy from your actual content
-python3 src/classify_tags.py --input data.json --output taxonomy.json
-
-# Phase 3: Classify all voice memos using Claude + taxonomy  
-python3 src/claude_taxonomy_classifier.py --pages data.json --taxonomy taxonomy.json --output results.json
-
-# Phase 4: Update Notion with hierarchical categories
-python3 src/update_notion_taxonomy.py --pages data.json --classifications results.json
-```
-
-**Result**: Your voice memos will have:
-- **Life Areas**: Broad categories like "Spiritual & Ceremonial", "Business & Career"
-- **Topics**: Specific themes like "Community Building", "Content Creation"
-- **Multi-category assignment**: Each memo can have multiple relevant categories
-- **Powerful filtering**: Find 20+ related memos instead of 1-2 exact matches
-
-### 🎛️ **Option 2: Basic Voice Memo Processing**
-
-For simple transcription and basic tagging:
+Transform your voice memos into organized knowledge with the main processing script:
 
 ```bash
-# Process your main collection (files auto-move to success/ when done)
-python3 main.py --folder audio_files
+# Process new voice memos
+python3 ongoing_main_process_new_voice_memo.py
 
-# Test with a few files first
-python3 main.py --folder audio_files --dry-run --max-files 5
-
-# Large batch processing with delays
-python3 main.py --folder audio_files --batch-size 10 --batch-delay 3.0
+# Process with specific phases
+python3 phase1-create-pages-and-get-pages.py
+python3 phase2-transcribe.py  
+python3 phase3-final.py
 ```
 
 ## 📁 **Folder Structure & Workflow**
@@ -138,31 +82,18 @@ audio_files/
 └── test_delete/                       # 🗑️  Negative test examples
 ```
 
-## 🔧 **Efficient API Usage & Caching**
+## 🔧 **Efficient Processing**
 
 VoiceVault is designed for efficiency:
 
-**✅ Smart Result Caching**: Phase 3 classifications are saved - no need to re-run Claude
-**✅ Clean Interfaces**: Each phase has specific input/output files  
-**✅ Reusable Results**: Use existing taxonomy and classifications multiple times
-**✅ Cost Optimization**: Avoid unnecessary API calls through intelligent caching
-
-```bash
-# Reuse existing results (no new Claude calls needed)
-python3 src/update_notion_taxonomy.py --pages data.json --classifications existing_results.json
-
-# Only run Phase 3 if you need new classifications
-# All other phases use cached/saved results
-```
+**✅ Automated Processing**: Handles transcription, analysis, and organization automatically
+**✅ Smart File Management**: Moves processed files to appropriate directories
+**✅ Progress Tracking**: Maintains state between processing sessions
+**✅ Error Handling**: Robust error handling and recovery mechanisms
 
 ## 📊 What Gets Created in Notion
 
-### Hierarchical Taxonomy Columns
-- **Life Area**: Broad life categories (e.g., "Spiritual & Ceremonial", "Business & Career")
-- **Topic**: Specific themes (e.g., "Community Building", "Content Creation", "Sacred Practice")
-- Both columns support **multiple values** per voice memo
-
-### Traditional Database Properties  
+### Database Properties  
 - **Title**: AI-generated specific title (e.g., "Inner Child Healing Session")
 - **Primary Themes**: 1-2 main themes (e.g., "Self Love", "Spiritual Practice")
 - **Specific Focus**: Detailed aspects (e.g., "Emotional Safety", "Personal Ceremony")  
@@ -185,26 +116,23 @@ python3 src/update_notion_taxonomy.py --pages data.json --classifications existi
 
 ```
 voicevault/
-├── src/                             # 🚀 CLEAN 4-PHASE PIPELINE
-│   ├── get_pages_and_tags.py       # Phase 1: Extract data from Notion
-│   ├── classify_tags.py            # Phase 2: Build taxonomy from actual content
-│   ├── claude_taxonomy_classifier.py # Phase 3: Classify with Claude AI
-│   ├── update_notion_taxonomy.py   # Phase 4: Update Notion with results
-│   └── transcriber.py              # Core transcription utility
-├── main.py                         # 🎛️ BASIC PROCESSING (Alternative)
-├── audio_files/                    # 📁 VOICE MEMO STORAGE
-│   ├── [500+ voice notes]          # ← Put your files here
-│   ├── success/                    # ← Successfully processed files
-│   ├── test_keep/                  # 🧪 Positive test examples
-│   └── test_delete/                # 🗑️ Negative test examples
+├── ongoing_main_process_new_voice_memo.py  # 🚀 MAIN PROCESSING SCRIPT
+├── phase1-create-pages-and-get-pages.py   # Phase 1: Create and extract pages
+├── phase2-transcribe.py                    # Phase 2: Transcription processing
+├── phase3-final.py                         # Phase 3: Final analysis and organization
+├── src/                                    # 📁 CORE UTILITIES
+│   └── transcriber.py                      # Core transcription utility
+├── audio_files/                            # 📁 VOICE MEMO STORAGE
+│   ├── [your voice notes]                  # ← Put your files here
+│   ├── success/                            # ← Successfully processed files
+│   ├── test_keep/                          # 🧪 Positive test examples
+│   └── test_delete/                        # 🗑️ Negative test examples
 ├── config/
-│   └── config.py                   # Configuration settings
-├── requirements.txt                # Python dependencies
-├── database_config.json            # Database configuration
-└── processed_files.json            # Processing tracking
+│   └── config.py                           # Configuration settings
+├── requirements.txt                        # Python dependencies
+├── database_config.json                    # Database configuration
+└── processed_files.json                    # Processing tracking
 ```
-
-**🎯 Two approaches: Advanced taxonomy system OR simple bulk processing!**
 
 ## 📁 Supported File Formats
 
@@ -214,37 +142,15 @@ voicevault/
 
 ## 🛠️ Troubleshooting
 
-### Taxonomy System Issues
-
-**1. Classification Results Missing**
-```bash
-# Check if Phase 3 completed successfully
-ls -la *.json  # Look for results.json file
-
-# Re-run only the failed phase
-python3 src/claude_taxonomy_classifier.py --pages data.json --taxonomy taxonomy.json --output results.json
-```
-
-**2. Notion Update Fails**
-```bash
-# Verify columns exist and integration has permissions
-# Check the update logs for specific API errors
-```
-
-**3. Phase Dependencies**
-- Phase 2 requires Phase 1 output (data.json)
-- Phase 3 requires Phase 1 and 2 outputs (data.json + taxonomy.json)  
-- Phase 4 requires Phase 1 and 3 outputs (data.json + results.json)
-
-### Basic Processing Issues
+### Processing Issues
 
 **1. Processing Fails**
 ```bash
 # Check logs for detailed errors
 tail -n 50 voice_memo_processor.log
 
-# Test with single file first
-python3 main.py --file "test_file.m4a" --dry-run
+# Test with main processing script
+python3 ongoing_main_process_new_voice_memo.py
 ```
 
 **2. Audio Transcription Problems**
@@ -259,52 +165,33 @@ python3 main.py --file "test_file.m4a" --dry-run
 # Clear all processing history (reprocess everything)
 rm processed_files.json
 
-# Start fresh with dry run
-python3 main.py --folder your_folder --dry-run
+# Start fresh processing
+python3 ongoing_main_process_new_voice_memo.py
 ```
 
 ## 🎯 Best Practices
 
-### For Taxonomy System
-1. **Start with Phase 1**: Always extract current data first
-2. **Review Taxonomy**: Check Phase 2 output before proceeding  
-3. **Batch Processing**: Phase 3 processes in efficient batches
-4. **Reuse Results**: Save classification results for multiple Notion updates
-
-### For Basic Processing
-1. **Start Small**: Process 3-5 files with `--dry-run` first
-2. **Test Setup**: Use `--max-files 3` for initial real processing
-3. **Scale Up**: Use batch processing for larger collections
+### For Voice Memo Processing
+1. **Start Small**: Test with a few files initially
+2. **Check Configuration**: Verify API keys and settings before processing
+3. **Monitor Progress**: Watch processing logs for any issues
+4. **Regular Processing**: Run the main script regularly to handle new voice memos
 
 ### For Large Collections (100+ files)
-1. **Use Taxonomy System**: More efficient for large-scale organization
-2. **Monitor API Costs**: Track Claude usage during classification
-3. **Process in Sessions**: Can pause/resume between phases
+1. **Process in Sessions**: Handle large batches over time
+2. **Monitor API Usage**: Track Claude and transcription API costs
+3. **Check Results**: Review processed memos in Notion for quality
 
 ## 🚀 Ready to Start?
 
-### Recommended: Hierarchical Taxonomy System
 ```bash
-# 1. Extract your voice memo data
-python3 src/get_pages_and_tags.py --output my_data.json
+# Start processing your voice memos
+python3 ongoing_main_process_new_voice_memo.py
 
-# 2. Build custom taxonomy from your content
-python3 src/classify_tags.py --input my_data.json --output my_taxonomy.json
-
-# 3. Classify everything with Claude
-python3 src/claude_taxonomy_classifier.py --pages my_data.json --taxonomy my_taxonomy.json --output my_results.json
-
-# 4. Update Notion with organized categories
-python3 src/update_notion_taxonomy.py --pages my_data.json --classifications my_results.json
-```
-
-### Alternative: Basic Processing
-```bash
-# Quick test
-python3 main.py --folder audio_files --dry-run --max-files 3
-
-# Full processing
-python3 main.py --folder audio_files --batch-size 5
+# Or run individual phases
+python3 phase1-create-pages-and-get-pages.py
+python3 phase2-transcribe.py
+python3 phase3-final.py
 ```
 
 Your voice memo chaos is about to become an organized, searchable knowledge vault! 🎉
@@ -312,10 +199,10 @@ Your voice memo chaos is about to become an organized, searchable knowledge vaul
 ## 📚 What's Next?
 
 After processing, you'll be able to:
-- **Filter by Life Area** to find broad categories of content
-- **Filter by Topic** for specific themes across your life
-- **Combine filters** for precise content discovery  
-- **Find patterns** and connections you never noticed
+- **Search transcribed content** in your Notion database
+- **Browse organized summaries** and AI-generated insights
+- **Access original audio** files directly from Notion
+- **Find patterns** and connections across your voice memos
 - **Transform scattered audio** into organized wisdom
 
 **The days of lost voice memos are over!** 🎙️✨

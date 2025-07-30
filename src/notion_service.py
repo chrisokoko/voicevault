@@ -1,10 +1,11 @@
-import logging
+"""
+Notion Service - All Notion API operations
+Handles database creation, page creation/updates, file uploads, and property management
+"""
+
 import os
+import logging
 import requests
-import mimetypes
-import base64
-import shutil
-import subprocess
 import json
 import time
 import hashlib
@@ -17,7 +18,7 @@ from mutagen import File
 
 logger = logging.getLogger(__name__)
 
-class NotionUploader:
+class NotionService:
     def __init__(self):
         if not NOTION_TOKEN:
             raise ValueError("NOTION_TOKEN not found in environment variables")
@@ -53,6 +54,8 @@ class NotionUploader:
                     logger.warning("Failed to save database ID to config file")
         elif not self.database_id:
             raise ValueError("NOTION_DATABASE_ID or NOTION_PARENT_PAGE_ID must be provided")
+
+    # PERFORMANCE AND CACHING FUNCTIONS
     
     def _rate_limit(self):
         """Intelligent rate limiting to avoid API limits"""
@@ -112,6 +115,10 @@ class NotionUploader:
                 result = self.client.pages.update(**kwargs)
             elif operation == "create_page":
                 result = self.client.pages.create(**kwargs)
+            elif operation == "get_page":
+                result = self.client.pages.retrieve(**kwargs)
+            elif operation == "query_database":
+                result = self.client.databases.query(**kwargs)
             else:
                 raise ValueError(f"Unknown operation: {operation}")
             
@@ -143,6 +150,519 @@ class NotionUploader:
             'cached_items': len(self.cache),
             'estimated_cost_savings': self.cache_hits * 0.01  # Rough estimate
         }
+
+    # DATABASE FUNCTIONS
+    
+    def check_database_exists(self) -> bool:
+        """Check if the specified database exists and is accessible"""
+        try:
+            self._make_api_call(
+                "get_database",
+                database_id=self.database_id,
+                use_cache=True,
+                cache_ttl=3600  # Cache database info for 1 hour
+            )
+            logger.info("Successfully connected to Notion database")
+            return True
+        except APIResponseError as e:
+            logger.error(f"Cannot access Notion database: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"Error checking Notion database: {e}")
+            return False
+
+    def create_database_if_needed(self, parent_page_id: str) -> Optional[str]:
+        """Create a new database for voice memos if needed"""
+        try:
+            database_properties = {
+                "Title": {
+                    "title": {}
+                },
+                "Primary Themes": {
+                    "multi_select": {
+                        "options": []
+                    }
+                },
+                "Specific Focus": {
+                    "multi_select": {
+                        "options": []
+                    }
+                },
+                "Content Types": {
+                    "multi_select": {
+                        "options": []
+                    }
+                },
+                "Emotional Tones": {
+                    "multi_select": {
+                        "options": []
+                    }
+                },
+                "Key Topics": {
+                    "multi_select": {
+                        "options": []
+                    }
+                },
+                "Tags": {
+                    "multi_select": {
+                        "options": []
+                    }
+                },
+                "Summary": {
+                    "rich_text": {}
+                },
+                "Duration": {
+                    "rich_text": {}
+                },
+                "Duration (Seconds)": {
+                    "number": {}
+                },
+                "File Created": {
+                    "date": {}
+                },
+                "File Size": {
+                    "rich_text": {}
+                },
+                "Audio File": {
+                    "files": {}
+                },
+                "Flagged for Deletion": {
+                    "checkbox": {}
+                },
+                "Deletion Confidence": {
+                    "select": {
+                        "options": [
+                            {"name": "High", "color": "red"},
+                            {"name": "Medium", "color": "yellow"},
+                            {"name": "Low", "color": "green"}
+                        ]
+                    }
+                },
+                "Deletion Reason": {
+                    "rich_text": {}
+                }
+            }
+            
+            response = self.client.databases.create(
+                parent={
+                    "type": "page_id",
+                    "page_id": parent_page_id
+                },
+                title=[
+                    {
+                        "type": "text",
+                        "text": {
+                            "content": "Voice Memos"
+                        }
+                    }
+                ],
+                properties=database_properties
+            )
+            
+            database_id = response["id"]
+            logger.info(f"Created new Notion database: {database_id}")
+            return database_id
+            
+        except APIResponseError as e:
+            logger.error(f"Error creating Notion database: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Error creating Notion database: {e}")
+            return None
+
+    def query_all_pages(self) -> List[Dict[str, Any]]:
+        """Query all pages from the database"""
+        try:
+            all_pages = []
+            has_more = True
+            start_cursor = None
+            
+            while has_more:
+                query_params = {
+                    "database_id": self.database_id,
+                    "page_size": 100
+                }
+                
+                if start_cursor:
+                    query_params["start_cursor"] = start_cursor
+                
+                response = self._make_api_call("query_database", **query_params, use_cache=False)
+                
+                all_pages.extend(response["results"])
+                has_more = response["has_more"]
+                start_cursor = response.get("next_cursor")
+            
+            logger.info(f"Retrieved {len(all_pages)} pages from database")
+            return all_pages
+            
+        except Exception as e:
+            logger.error(f"Error querying database: {e}")
+            return []
+
+    # PAGE FUNCTIONS
+    
+    def create_page(self, 
+                   title: str,
+                   transcript: str,
+                   claude_tags: Dict[str, str],
+                   summary: str,
+                   filename: str,
+                   audio_file_path: str,
+                   audio_duration: Optional[float] = None,
+                   deletion_analysis: Optional[Dict] = None,
+                   original_transcript: Optional[str] = None) -> Optional[str]:
+        """Create a new page in the Notion database with the voice memo data"""
+        try:
+            # Extract audio metadata
+            metadata = self.extract_audio_metadata(audio_file_path)
+            
+            # Helper function to parse comma-separated tags into multi-select format
+            def parse_tags_to_multiselect(tag_string: str) -> List[Dict[str, str]]:
+                if not tag_string:
+                    return []
+                # Parse tags, clean brackets if present, and format for Notion
+                tags = tag_string.replace('[', '').replace(']', '').split(',')
+                return [{"name": tag.strip()} for tag in tags if tag.strip()]
+            
+            # Process each tag category
+            primary_themes_tags = parse_tags_to_multiselect(claude_tags.get('primary_themes', ''))
+            specific_focus_tags = parse_tags_to_multiselect(claude_tags.get('specific_focus', ''))
+            content_types_tags = parse_tags_to_multiselect(claude_tags.get('content_types', ''))
+            emotional_tones_tags = parse_tags_to_multiselect(claude_tags.get('emotional_tones', ''))
+            key_topics_tags = parse_tags_to_multiselect(claude_tags.get('key_topics', ''))
+            
+            # Combine all tags for the main Tags field (for backward compatibility)
+            all_tags = []
+            for tag_list in [primary_themes_tags, specific_focus_tags, content_types_tags, emotional_tones_tags, key_topics_tags[:6]]:
+                all_tags.extend(tag_list)
+            unique_tags = list({tag['name']: tag for tag in all_tags}.values())[:15]  # Remove duplicates, limit to 15
+            
+            # Prepare properties for the Notion page
+            properties = {
+                "Title": {
+                    "title": [
+                        {
+                            "text": {
+                                "content": title
+                            }
+                        }
+                    ]
+                },
+                "Primary Themes": {
+                    "multi_select": primary_themes_tags
+                } if primary_themes_tags else None,
+                "Specific Focus": {
+                    "multi_select": specific_focus_tags
+                } if specific_focus_tags else None,
+                "Content Types": {
+                    "multi_select": content_types_tags
+                } if content_types_tags else None,
+                "Emotional Tones": {
+                    "multi_select": emotional_tones_tags
+                } if emotional_tones_tags else None,
+                "Key Topics": {
+                    "multi_select": key_topics_tags
+                } if key_topics_tags else None,
+                "Tags": {
+                    "multi_select": unique_tags[:10]  # Already formatted as list of dicts
+                },
+                "Summary": {
+                    "rich_text": [
+                        {
+                            "text": {
+                                "content": summary
+                            }
+                        }
+                    ]
+                },
+                "Duration": {
+                    "rich_text": [
+                        {
+                            "text": {
+                                "content": self.format_duration(metadata['duration_seconds'])
+                            }
+                        }
+                    ]
+                },
+                "Duration (Seconds)": {
+                    "number": metadata['duration_seconds']
+                },
+                "File Created": {
+                    "date": {
+                        "start": metadata['file_created'].isoformat() if metadata['file_created'] else None
+                    } if metadata['file_created'] else None
+                },
+                "File Size": {
+                    "rich_text": [
+                        {
+                            "text": {
+                                "content": self.format_file_size(metadata['file_size'])
+                            }
+                        }
+                    ]
+                },
+                "Audio File": {
+                    "files": []  # Will be populated after file upload
+                },
+                "Flagged for Deletion": {
+                    "checkbox": deletion_analysis.get('should_delete', False) if deletion_analysis else False
+                },
+                "Deletion Confidence": {
+                    "select": {
+                        "name": deletion_analysis.get('confidence', 'low').title() if deletion_analysis and deletion_analysis.get('should_delete') else None
+                    }
+                } if deletion_analysis and deletion_analysis.get('should_delete') else None,
+                "Deletion Reason": {
+                    "rich_text": [
+                        {
+                            "text": {
+                                "content": deletion_analysis.get('reason', '') if deletion_analysis else ''
+                            }
+                        }
+                    ]
+                }
+            }
+            
+            # Remove None values
+            properties = {k: v for k, v in properties.items() if v is not None}
+            
+            # Create the page content with formatted transcript
+            children = self._build_page_content(transcript, original_transcript, claude_tags)
+            
+            # Create the page
+            response = self._make_api_call(
+                "create_page",
+                parent={"database_id": self.database_id},
+                properties=properties,
+                children=children,
+                use_cache=False  # Don't cache page creation
+            )
+            
+            page_id = response["id"]
+            logger.info(f"Successfully created Notion page: {page_id}")
+            
+            # Add audio file to the page properties
+            self.add_audio_file_to_page(page_id, audio_file_path)
+            
+            return page_id
+            
+        except APIResponseError as e:
+            logger.error(f"Notion API error: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Error creating Notion page: {e}")
+            return None
+    
+    def update_page(self, page_id: str, properties: Dict) -> bool:
+        """Update an existing Notion page"""
+        try:
+            self._make_api_call(
+                "update_page",
+                page_id=page_id,
+                properties=properties,
+                use_cache=False  # Don't cache page updates
+            )
+            logger.info(f"Successfully updated Notion page: {page_id}")
+            return True
+        except APIResponseError as e:
+            logger.error(f"Notion API error updating page: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"Error updating Notion page: {e}")
+            return False
+
+    def update_page_bucket_tags(self, page_id: str, life_domain: str, focus_area: str) -> bool:
+        """Update page with bucket classification tags (Phase 3) - single values (legacy)"""
+        # Convert single values to arrays and use the multiple version
+        life_domains = [life_domain] if life_domain else []
+        focus_areas = [focus_area] if focus_area else []
+        return self.update_page_bucket_tags_multiple(page_id, life_domains, focus_areas)
+    
+    def update_page_bucket_tags_multiple(self, page_id: str, life_domains: List[str], focus_areas: List[str]) -> bool:
+        """Update page with multiple bucket classification tags"""
+        try:
+            properties = {}
+            
+            if life_domains:
+                properties["Life Area"] = {
+                    "multi_select": [
+                        {"name": domain} for domain in life_domains
+                    ]
+                }
+            
+            if focus_areas:
+                properties["Topic"] = {
+                    "multi_select": [
+                        {"name": area} for area in focus_areas
+                    ]
+                }
+            
+            if properties:
+                return self.update_page(page_id, properties)
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error updating bucket tags for page {page_id}: {e}")
+            return False
+
+    def get_page(self, page_id: str) -> Optional[Dict[str, Any]]:
+        """Get a page by ID"""
+        try:
+            response = self._make_api_call(
+                "get_page",
+                page_id=page_id,
+                use_cache=True,
+                cache_ttl=300  # Cache page data for 5 minutes
+            )
+            return response
+        except Exception as e:
+            logger.error(f"Error getting page {page_id}: {e}")
+            return None
+
+    # CONTENT AND FORMATTING FUNCTIONS
+    
+    def _build_page_content(self, transcript: str, original_transcript: Optional[str], claude_tags: Dict[str, str]) -> List[Dict]:
+        """Build page content blocks with transcript and analysis"""
+        children = [
+            {
+                "object": "block",
+                "type": "heading_2",
+                "heading_2": {
+                    "rich_text": [
+                        {
+                            "type": "text",
+                            "text": {
+                                "content": "Formatted Transcript"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+        
+        # Split transcript into chunks of 2000 characters (Notion's paragraph limit)
+        chunk_size = 2000
+        
+        for i in range(0, len(transcript), chunk_size):
+            chunk = transcript[i:i + chunk_size]
+            children.append({
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [
+                        {
+                            "type": "text",
+                            "text": {
+                                "content": chunk
+                            }
+                        }
+                    ]
+                }
+            })
+        
+        # Add original transcript in a toggle if provided
+        if original_transcript and original_transcript != transcript:
+            toggle_children = []
+            for i in range(0, len(original_transcript), chunk_size):
+                chunk = original_transcript[i:i + chunk_size]
+                toggle_children.append({
+                    "object": "block",
+                    "type": "paragraph",
+                    "paragraph": {
+                        "rich_text": [
+                            {
+                                "type": "text",
+                                "text": {
+                                    "content": chunk
+                                }
+                            }
+                        ]
+                    }
+                })
+            
+            children.append({
+                "object": "block",
+                "type": "toggle",
+                "toggle": {
+                    "rich_text": [
+                        {
+                            "type": "text",
+                            "text": {
+                                "content": "Original Transcript"
+                            }
+                        }
+                    ],
+                    "children": toggle_children
+                }
+            })
+        
+        # Add Claude analysis in a toggle
+        analysis_children = []
+        
+        tag_items = [
+            ("Primary Themes", claude_tags.get('primary_themes', 'N/A')),
+            ("Specific Focus", claude_tags.get('specific_focus', 'N/A')),
+            ("Content Types", claude_tags.get('content_types', 'N/A')),
+            ("Emotional Tones", claude_tags.get('emotional_tones', 'N/A')),
+            ("Key Topics", claude_tags.get('key_topics', 'N/A'))
+        ]
+        
+        for tag_name, tag_value in tag_items:
+            if tag_value and tag_value != 'N/A':
+                analysis_children.append({
+                    "object": "block",
+                    "type": "bulleted_list_item",
+                    "bulleted_list_item": {
+                        "rich_text": [
+                            {
+                                "type": "text",
+                                "text": {
+                                    "content": f"{tag_name}: {tag_value}"
+                                }
+                            }
+                        ]
+                    }
+                })
+        
+        if claude_tags.get('brief_summary'):
+            analysis_children.append({
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [
+                        {
+                            "type": "text",
+                            "text": {
+                                "content": f"Analysis Summary: {claude_tags['brief_summary']}"
+                            },
+                            "annotations": {
+                                "italic": True
+                            }
+                        }
+                    ]
+                }
+            })
+        
+        children.append({
+            "object": "block",
+            "type": "toggle",
+            "toggle": {
+                "rich_text": [
+                    {
+                        "type": "text",
+                        "text": {
+                            "content": "Claude Reasoning Summary"
+                        }
+                    }
+                ],
+                "children": analysis_children
+            }
+        })
+        
+        return children
+
+    # UTILITY FUNCTIONS
     
     def extract_audio_metadata(self, file_path: str) -> Dict[str, any]:
         """Extract metadata from audio file"""
@@ -151,9 +671,10 @@ class NotionUploader:
             stat = os.stat(file_path)
             file_size = stat.st_size
             
-            # Try to get actual recording date from ffprobe
+            # Try to get actual recording date from metadata
             file_created = None
             try:
+                import subprocess
                 result = subprocess.run([
                     'ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', file_path
                 ], capture_output=True, text=True)
@@ -163,7 +684,6 @@ class NotionUploader:
                     if 'format' in data and 'tags' in data['format']:
                         creation_time = data['format']['tags'].get('creation_time')
                         if creation_time:
-                            # Parse ISO 8601 format: 2025-04-12T17:36:58.000000Z
                             file_created = datetime.fromisoformat(creation_time.replace('Z', '+00:00'))
                             logger.info(f"Found actual recording date: {file_created}")
             except Exception as e:
@@ -225,528 +745,106 @@ class NotionUploader:
             return f"{bytes_size / 1024:.1f} KB"
         else:
             return f"{bytes_size / (1024 * 1024):.1f} MB"
+
+    # FILE UPLOAD FUNCTIONS
     
-    def generate_headline_from_transcript(self, transcript: str, summary: str, claude_tags: Dict[str, str]) -> str:
-        """Generate a specific, properly capitalized headline from content"""
-        if not transcript:
-            return "Voice Memo"
+    def add_audio_file_to_page(self, page_id: str, audio_file_path: str) -> bool:
+        """Upload audio file to Notion storage and add to page properties with completion verification"""
+        # Validate file first (pure logic)
+        validation = self._validate_file_for_upload(audio_file_path)
+        if not validation["valid"]:
+            logger.error(f"File validation failed: {validation['reason']}")
+            return False
         
-        # Use Claude to generate a proper headline that's specific and well-formatted
-        try:
-            headline_prompt = f"""Create a specific, compelling title for this voice memo. The title should:
-1. Be 3-8 words long
-2. Capture the specific essence of the content
-3. Use proper capitalization (Title Case)
-4. Be specific, not generic
-
-Content context:
-Primary Theme: {claude_tags.get('primary_theme', '')}
-Specific Focus: {claude_tags.get('specific_focus', '')}
-Key Topics: {claude_tags.get('key_topics', '')}
-Summary: {summary[:200]}
-First 100 chars of transcript: {transcript[:100]}
-
-Generate just the title, nothing else."""
-
-            from anthropic import Anthropic
-            from config.config import CLAUDE_API_KEY
+        filename = validation["filename"]
+        logger.info(f"Starting upload process for {filename}")
+        
+        attempt_count = 0
+        
+        # Keep trying until file is successfully uploaded and verified
+        while True:
+            attempt_count += 1
             
-            if CLAUDE_API_KEY:
-                client = Anthropic(api_key=CLAUDE_API_KEY)
-                response = client.messages.create(
-                    model="claude-3-5-sonnet-20241022",
-                    max_tokens=50,
-                    temperature=0.3,
-                    messages=[{"role": "user", "content": headline_prompt}]
+            try:
+                # Check if file is already uploaded by checking page properties
+                if self._is_file_already_uploaded(page_id, filename):
+                    logger.info(f"File {filename} already uploaded successfully")
+                    return True
+                
+                # Upload file to Notion storage
+                upload_id = self.upload_file_to_notion_storage(audio_file_path)
+                
+                if not upload_id:
+                    error_type = "upload_failed"
+                    if self._should_retry_upload(error_type, False):
+                        delay = self._calculate_retry_delay(attempt_count, False)
+                        logger.warning(f"Upload attempt {attempt_count} failed for {filename}, retrying in {delay}s...")
+                        time.sleep(delay)
+                        continue
+                    else:
+                        logger.error(f"Upload failed and not retryable for {filename}")
+                        return False
+                
+                # Update page properties to include the audio file
+                properties = {
+                    "Audio File": {
+                        "files": [
+                            {
+                                "type": "file_upload",
+                                "file_upload": {
+                                    "id": upload_id
+                                },
+                                "name": filename
+                            }
+                        ]
+                    }
+                }
+                
+                self.client.pages.update(
+                    page_id=page_id,
+                    properties=properties
                 )
                 
-                generated_title = response.content[0].text.strip()
-                # Clean up any quotes or extra formatting
-                generated_title = generated_title.replace('"', '').replace("'", "").strip()
+                # Verify the upload completed by checking if file appears in page properties
+                if self._verify_upload_completion(page_id, filename):
+                    logger.info(f"Successfully uploaded and verified: {filename}")
+                    return True
+                else:
+                    error_type = "verification_failed"
+                    if self._should_retry_upload(error_type, False):
+                        delay = self._calculate_retry_delay(attempt_count, False)
+                        logger.warning(f"Upload completed but verification failed for {filename}, retrying in {delay}s...")
+                        time.sleep(delay)
+                        continue
+                    else:
+                        logger.error(f"Verification failed and not retryable for {filename}")
+                        return False
+                        
+            except (APIResponseError, RequestTimeoutError) as e:
+                error_type = self._extract_error_type_from_exception(e)
+                is_timeout = error_type == "timeout"
                 
-                if 3 <= len(generated_title.split()) <= 8:
-                    return generated_title
-            
-        except Exception as e:
-            logger.warning(f"Could not generate Claude headline: {e}")
-        
-        # Fallback to improved extraction method
-        return self._extract_title_from_content(transcript, summary, claude_tags)
-    
-    def _extract_title_from_content(self, transcript: str, summary: str, claude_tags: Dict[str, str]) -> str:
-        """Fallback method to extract title from content"""
-        # Try to use primary theme + specific focus for a good title
-        primary_theme = claude_tags.get('primary_theme', '')
-        specific_focus = claude_tags.get('specific_focus', '')
-        
-        if primary_theme and specific_focus:
-            # Combine theme and focus into a title
-            combined = f"{primary_theme}: {specific_focus}"
-            if len(combined) <= 50:
-                return self._title_case_properly(combined)
-        
-        # Try extracting from first sentence
-        sentences = transcript.split('.')
-        first_sentence = sentences[0].strip() if sentences else transcript.strip()
-        first_sentence = first_sentence.replace('"', '').replace("'", "")
-        
-        if 15 <= len(first_sentence) <= 50:
-            return self._title_case_properly(first_sentence)
-        
-        # Use primary theme if available
-        if primary_theme:
-            return self._title_case_properly(primary_theme)
-        
-        return "Voice Memo"
-    
-    def _title_case_properly(self, text: str) -> str:
-        """Apply proper title case capitalization"""
-        # Words that should remain lowercase unless they're the first word
-        lowercase_words = {'a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'in', 'nor', 'of', 'on', 'or', 'so', 'the', 'to', 'up', 'yet'}
-        
-        words = text.split()
-        title_cased = []
-        
-        for i, word in enumerate(words):
-            # Clean the word
-            clean_word = word.strip('.,!?:;')
-            punctuation = word[len(clean_word):]
-            
-            # First word is always capitalized, others follow rules
-            if i == 0 or clean_word.lower() not in lowercase_words:
-                title_cased.append(clean_word.capitalize() + punctuation)
-            else:
-                title_cased.append(clean_word.lower() + punctuation)
-        
-        return ' '.join(title_cased)
-        
-    def create_page(self, 
-                   title: str,
-                   transcript: str,
-                   claude_tags: Dict[str, str],
-                   summary: str,
-                   filename: str,
-                   audio_file_path: str,
-                   audio_duration: Optional[float] = None,
-                   deletion_analysis: Optional[Dict] = None,
-                   original_transcript: Optional[str] = None) -> Optional[str]:
-        """
-        Create a new page in the Notion database with the voice memo data
-        """
-        try:
-            # Extract audio metadata
-            metadata = self.extract_audio_metadata(audio_file_path)
-            
-            # Generate headline from transcript
-            headline = self.generate_headline_from_transcript(transcript, summary, claude_tags)
-            
-            # Helper function to parse comma-separated tags into multi-select format
-            def parse_tags_to_multiselect(tag_string: str) -> List[Dict[str, str]]:
-                if not tag_string:
-                    return []
-                # Parse tags, clean brackets if present, and format for Notion
-                tags = tag_string.replace('[', '').replace(']', '').split(',')
-                return [{"name": tag.strip()} for tag in tags if tag.strip()]
-            
-            # Process each tag category
-            primary_themes_tags = parse_tags_to_multiselect(claude_tags.get('primary_themes', ''))
-            specific_focus_tags = parse_tags_to_multiselect(claude_tags.get('specific_focus', ''))
-            content_types_tags = parse_tags_to_multiselect(claude_tags.get('content_types', ''))
-            emotional_tones_tags = parse_tags_to_multiselect(claude_tags.get('emotional_tones', ''))
-            key_topics_tags = parse_tags_to_multiselect(claude_tags.get('key_topics', ''))
-            
-            # Combine all tags for the main Tags field (for backward compatibility)
-            all_tags = []
-            for tag_list in [primary_themes_tags, specific_focus_tags, content_types_tags, emotional_tones_tags, key_topics_tags[:6]]:
-                all_tags.extend(tag_list)
-            unique_tags = list({tag['name']: tag for tag in all_tags}.values())[:15]  # Remove duplicates, limit to 15
-            
-            # Prepare properties for the Notion page
-            properties = {
-                "Title": {
-                    "title": [
-                        {
-                            "text": {
-                                "content": headline
-                            }
-                        }
-                    ]
-                },
-                "Primary Themes": {
-                    "multi_select": primary_themes_tags
-                } if primary_themes_tags else None,
-                "Specific Focus": {
-                    "multi_select": specific_focus_tags
-                } if specific_focus_tags else None,
-                "Content Types": {
-                    "multi_select": content_types_tags
-                } if content_types_tags else None,
-                "Emotional Tones": {
-                    "multi_select": emotional_tones_tags
-                } if emotional_tones_tags else None,
-                "Key Topics": {
-                    "multi_select": key_topics_tags
-                } if key_topics_tags else None,
-                "Tags": {
-                    "multi_select": unique_tags[:10]  # Already formatted as list of dicts
-                },
-                "Summary": {
-                    "rich_text": [
-                        {
-                            "text": {
-                                "content": summary
-                            }
-                        }
-                    ]
-                },
-                "Duration": {
-                    "rich_text": [
-                        {
-                            "text": {
-                                "content": self.format_duration(metadata['duration_seconds'])
-                            }
-                        }
-                    ]
-                },
-                "File Created": {
-                    "date": {
-                        "start": metadata['file_created'].isoformat() if metadata['file_created'] else None
-                    } if metadata['file_created'] else None
-                },
-                "File Size": {
-                    "rich_text": [
-                        {
-                            "text": {
-                                "content": self.format_file_size(metadata['file_size'])
-                            }
-                        }
-                    ]
-                },
-                "Audio File": {
-                    "files": []  # Will be populated after file upload
-                },
-                "Flagged for Deletion": {
-                    "checkbox": deletion_analysis.get('should_delete', False) if deletion_analysis else False
-                },
-                "Deletion Confidence": {
-                    "select": {
-                        "name": deletion_analysis.get('confidence', 'low').title() if deletion_analysis and deletion_analysis.get('should_delete') else None
-                    }
-                } if deletion_analysis and deletion_analysis.get('should_delete') else None,
-                "Deletion Reason": {
-                    "rich_text": [
-                        {
-                            "text": {
-                                "content": deletion_analysis.get('reason', '') if deletion_analysis else ''
-                            }
-                        }
-                    ]
-                }
-            }
-            
-            # Remove None values
-            properties = {k: v for k, v in properties.items() if v is not None}
-            
-            # Create the page content with formatted transcript and Claude analysis
-            children = [
-                {
-                    "object": "block",
-                    "type": "heading_2",
-                    "heading_2": {
-                        "rich_text": [
-                            {
-                                "type": "text",
-                                "text": {
-                                    "content": "Formatted Transcript"
-                                }
-                            }
-                        ]
-                    }
-                },
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "paragraph": {
-                        "rich_text": [
-                            {
-                                "type": "text",
-                                "text": {
-                                    "content": transcript[:32000]  # Using formatted transcript - increased limit
-                                }
-                            }
-                        ]
-                    }
-                }
-            ]
-            
-            # Add original transcript in a toggle if provided
-            if original_transcript and original_transcript != transcript:
-                children.extend([
-                    {
-                        "object": "block",
-                        "type": "toggle",
-                        "toggle": {
-                            "rich_text": [
-                                {
-                                    "type": "text",
-                                    "text": {
-                                        "content": "Original Transcript"
-                                    }
-                                }
-                            ],
-                            "children": [
-                                {
-                                    "object": "block",
-                                    "type": "paragraph",
-                                    "paragraph": {
-                                        "rich_text": [
-                                            {
-                                                "type": "text",
-                                                "text": {
-                                                    "content": original_transcript[:32000]
-                                                }
-                                            }
-                                        ]
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ])
-            
-            # Add Claude analysis in a toggle
-            toggle_children = []
-            
-            # Add each standardized tag type
-            tag_items = [
-                ("Primary Themes", claude_tags.get('primary_themes', 'N/A')),
-                ("Specific Focus", claude_tags.get('specific_focus', 'N/A')),
-                ("Content Types", claude_tags.get('content_types', 'N/A')),
-                ("Emotional Tones", claude_tags.get('emotional_tones', 'N/A')),
-                ("Key Topics", claude_tags.get('key_topics', 'N/A'))
-            ]
-            
-            for tag_name, tag_value in tag_items:
-                if tag_value and tag_value != 'N/A':
-                    toggle_children.append({
-                        "object": "block",
-                        "type": "bulleted_list_item",
-                        "bulleted_list_item": {
-                            "rich_text": [
-                                {
-                                    "type": "text",
-                                    "text": {
-                                        "content": f"{tag_name}: {tag_value}"
-                                    }
-                                }
-                            ]
-                        }
-                    })
-            
-            # Add brief summary if available
-            if claude_tags.get('brief_summary'):
-                toggle_children.append({
-                    "object": "block",
-                    "type": "paragraph",
-                    "paragraph": {
-                        "rich_text": [
-                            {
-                                "type": "text",
-                                "text": {
-                                    "content": f"Analysis Summary: {claude_tags['brief_summary']}"
-                                },
-                                "annotations": {
-                                    "italic": True
-                                }
-                            }
-                        ]
-                    }
-                })
-            
-            # Create the toggle block
-            children.append({
-                "object": "block",
-                "type": "toggle",
-                "toggle": {
-                    "rich_text": [
-                        {
-                            "type": "text",
-                            "text": {
-                                "content": "Claude Reasoning Summary"
-                            }
-                        }
-                    ],
-                    "children": toggle_children
-                }
-            })
-            
-            # Create the page
-            response = self._make_api_call(
-                "create_page",
-                parent={"database_id": self.database_id},
-                properties=properties,
-                children=children,
-                use_cache=False  # Don't cache page creation
-            )
-            
-            page_id = response["id"]
-            logger.info(f"Successfully created Notion page: {page_id}")
-            
-            # Add audio file to the page properties
-            self.add_audio_file_to_properties(page_id, audio_file_path)
-            
-            return page_id
-            
-        except APIResponseError as e:
-            logger.error(f"Notion API error: {e}")
-            return None
-        except Exception as e:
-            logger.error(f"Error creating Notion page: {e}")
-            return None
-    
-    def update_page(self, page_id: str, properties: Dict) -> bool:
-        """
-        Update an existing Notion page
-        """
-        try:
-            self._make_api_call(
-                "update_page",
-                page_id=page_id,
-                properties=properties,
-                use_cache=False  # Don't cache page updates
-            )
-            logger.info(f"Successfully updated Notion page: {page_id}")
-            return True
-        except APIResponseError as e:
-            logger.error(f"Notion API error updating page: {e}")
-            return False
-        except Exception as e:
-            logger.error(f"Error updating Notion page: {e}")
-            return False
-    
-    def check_database_exists(self) -> bool:
-        """
-        Check if the specified database exists and is accessible
-        """
-        try:
-            self._make_api_call(
-                "get_database",
-                database_id=self.database_id,
-                use_cache=True,
-                cache_ttl=3600  # Cache database info for 1 hour
-            )
-            logger.info("Successfully connected to Notion database")
-            return True
-        except APIResponseError as e:
-            logger.error(f"Cannot access Notion database: {e}")
-            return False
-        except Exception as e:
-            logger.error(f"Error checking Notion database: {e}")
-            return False
-    
-    def create_database_if_needed(self, parent_page_id: str) -> Optional[str]:
-        """
-        Create a new database for voice memos if needed
-        This requires a parent page ID where the database will be created
-        """
-        try:
-            database_properties = {
-                "Title": {
-                    "title": {}
-                },
-                "Primary Themes": {
-                    "multi_select": {
-                        "options": []
-                    }
-                },
-                "Specific Focus": {
-                    "multi_select": {
-                        "options": []
-                    }
-                },
-                "Content Types": {
-                    "multi_select": {
-                        "options": []
-                    }
-                },
-                "Emotional Tones": {
-                    "multi_select": {
-                        "options": []
-                    }
-                },
-                "Key Topics": {
-                    "multi_select": {
-                        "options": []
-                    }
-                },
-                "Tags": {
-                    "multi_select": {
-                        "options": []
-                    }
-                },
-                "Summary": {
-                    "rich_text": {}
-                },
-                "Duration": {
-                    "rich_text": {}
-                },
-                "File Created": {
-                    "date": {}
-                },
-                "File Size": {
-                    "rich_text": {}
-                },
-                "Audio File": {
-                    "files": {}
-                },
-                "Flagged for Deletion": {
-                    "checkbox": {}
-                },
-                "Deletion Confidence": {
-                    "select": {
-                        "options": [
-                            {"name": "High", "color": "red"},
-                            {"name": "Medium", "color": "yellow"},
-                            {"name": "Low", "color": "green"}
-                        ]
-                    }
-                },
-                "Deletion Reason": {
-                    "rich_text": {}
-                }
-            }
-            
-            response = self.client.databases.create(
-                parent={
-                    "type": "page_id",
-                    "page_id": parent_page_id
-                },
-                title=[
-                    {
-                        "type": "text",
-                        "text": {
-                            "content": "Voice Memos"
-                        }
-                    }
-                ],
-                properties=database_properties
-            )
-            
-            database_id = response["id"]
-            logger.info(f"Created new Notion database: {database_id}")
-            return database_id
-            
-        except APIResponseError as e:
-            logger.error(f"Error creating Notion database: {e}")
-            return None
-        except Exception as e:
-            logger.error(f"Error creating Notion database: {e}")
-            return None
-    
+                if self._should_retry_upload(error_type, is_timeout):
+                    delay = self._calculate_retry_delay(attempt_count, is_timeout)
+                    logger.warning(f"Error during upload of {filename} (attempt {attempt_count}): {error_type}, retrying in {delay}s...")
+                    time.sleep(delay)
+                    continue
+                else:
+                    logger.error(f"Non-recoverable error uploading {filename}: {e}")
+                    return False
+            except Exception as e:
+                error_type = self._extract_error_type_from_exception(e)
+                logger.error(f"Unexpected error uploading {filename}: {e}")
+                
+                if self._should_retry_upload(error_type, False):
+                    delay = self._calculate_retry_delay(attempt_count, False)
+                    time.sleep(delay)
+                    continue
+                else:
+                    return False
+
     def upload_file_to_notion_storage(self, file_path: str) -> Optional[str]:
-        """
-        Upload file to Notion's storage using their official API
-        """
+        """Upload file to Notion's storage using their official API"""
         try:
             filename = os.path.basename(file_path)
             file_size = os.path.getsize(file_path)
@@ -762,11 +860,9 @@ Generate just the title, nothing else."""
         except Exception as e:
             logger.error(f"Error uploading file to Notion: {e}")
             return None
-    
+
     def _upload_single_part_file(self, file_path: str) -> Optional[str]:
-        """
-        Upload small file (≤20MB) using single-part upload
-        """
+        """Upload small file (≤20MB) using single-part upload"""
         try:
             filename = os.path.basename(file_path)
             
@@ -818,11 +914,9 @@ Generate just the title, nothing else."""
         except Exception as e:
             logger.error(f"Error in single-part upload: {e}")
             return None
-    
+
     def _upload_multi_part_file(self, file_path: str) -> Optional[str]:
-        """
-        Upload large file (>20MB) using multi-part upload
-        """
+        """Upload large file (>20MB) using multi-part upload"""
         try:
             filename = os.path.basename(file_path)
             file_size = os.path.getsize(file_path)
@@ -906,8 +1000,8 @@ Generate just the title, nothing else."""
         except Exception as e:
             logger.error(f"Error in multi-part upload: {e}")
             return None
-    
-    # ===== LOGIC FUNCTIONS (Pure logic, no API calls - can be unit tested) =====
+
+    # UPLOAD LOGIC FUNCTIONS (Pure logic, no API calls)
     
     def _should_retry_upload(self, error_type: str, is_timeout: bool) -> bool:
         """Determine if an upload should be retried based on error type"""
@@ -960,10 +1054,6 @@ Generate just the title, nothing else."""
             "use_multipart": file_size_mb > 20  # Use multipart for files > 20MB
         }
     
-    def _should_use_multipart_upload(self, file_size_bytes: int) -> bool:
-        """Determine if file should use multipart upload strategy"""
-        return (file_size_bytes / (1024 * 1024)) > 20  # 20MB threshold
-    
     def _extract_error_type_from_exception(self, exception: Exception) -> str:
         """Extract standardized error type from exception for retry logic"""
         error_str = str(exception).lower()
@@ -1003,105 +1093,8 @@ Generate just the title, nothing else."""
                 }
         
         return {"found": False, "has_url": False, "upload_complete": False}
-    
-    # ===== API FUNCTIONS (Makes actual API calls - integration tested) =====
-    
-    def add_audio_file_to_properties(self, page_id: str, audio_file_path: str) -> bool:
-        """
-        Upload audio file to Notion storage and add to page properties with completion verification
-        """
-        # Validate file first (pure logic)
-        validation = self._validate_file_for_upload(audio_file_path)
-        if not validation["valid"]:
-            logger.error(f"File validation failed: {validation['reason']}")
-            return False
-        
-        filename = validation["filename"]
-        logger.info(f"Starting upload process for {filename}")
-        
-        attempt_count = 0
-        
-        # Keep trying until file is successfully uploaded and verified
-        while True:
-            attempt_count += 1
-            
-            try:
-                # Check if file is already uploaded by checking page properties
-                if self._is_file_already_uploaded(page_id, filename):
-                    logger.info(f"File {filename} already uploaded successfully")
-                    return True
-                
-                # Upload file to Notion storage
-                upload_id = self.upload_file_to_notion_storage(audio_file_path)
-                
-                if not upload_id:
-                    error_type = "upload_failed"
-                    if self._should_retry_upload(error_type, False):
-                        delay = self._calculate_retry_delay(attempt_count, False)
-                        logger.warning(f"Upload attempt {attempt_count} failed for {filename}, retrying in {delay}s...")
-                        time.sleep(delay)
-                        continue
-                    else:
-                        logger.error(f"Upload failed and not retryable for {filename}")
-                        return False
-                
-                # Update page properties to include the audio file
-                properties = {
-                    "Audio File": {
-                        "files": [
-                            {
-                                "type": "file_upload",
-                                "file_upload": {
-                                    "id": upload_id
-                                },
-                                "name": filename
-                            }
-                        ]
-                    }
-                }
-                
-                self.client.pages.update(
-                    page_id=page_id,
-                    properties=properties
-                )
-                
-                # Verify the upload completed by checking if file appears in page properties
-                if self._verify_upload_completion(page_id, filename):
-                    logger.info(f"Successfully uploaded and verified: {filename}")
-                    return True
-                else:
-                    error_type = "verification_failed"
-                    if self._should_retry_upload(error_type, False):
-                        delay = self._calculate_retry_delay(attempt_count, False)
-                        logger.warning(f"Upload completed but verification failed for {filename}, retrying in {delay}s...")
-                        time.sleep(delay)
-                        continue
-                    else:
-                        logger.error(f"Verification failed and not retryable for {filename}")
-                        return False
-                    
-            except (APIResponseError, RequestTimeoutError) as e:
-                error_type = self._extract_error_type_from_exception(e)
-                is_timeout = error_type == "timeout"
-                
-                if self._should_retry_upload(error_type, is_timeout):
-                    delay = self._calculate_retry_delay(attempt_count, is_timeout)
-                    logger.warning(f"Error during upload of {filename} (attempt {attempt_count}): {error_type}, retrying in {delay}s...")
-                    time.sleep(delay)
-                    continue
-                else:
-                    logger.error(f"Non-recoverable error uploading {filename}: {e}")
-                    return False
-            except Exception as e:
-                error_type = self._extract_error_type_from_exception(e)
-                logger.error(f"Unexpected error uploading {filename}: {e}")
-                
-                if self._should_retry_upload(error_type, False):
-                    delay = self._calculate_retry_delay(attempt_count, False)
-                    time.sleep(delay)
-                    continue
-                else:
-                    return False
+
+    # UPLOAD API FUNCTIONS (Makes actual API calls)
     
     def _is_file_already_uploaded(self, page_id: str, filename: str) -> bool:
         """Check if file is already successfully uploaded to the page"""
@@ -1131,30 +1124,7 @@ Generate just the title, nothing else."""
             else:
                 logger.debug(f"Upload verification failed: {filename} not found in page properties")
                 return False
-            
+                
         except Exception as e:
             logger.error(f"Error verifying upload completion: {e}")
             return False
-    
-    def create_file_block(self, file_url: str, filename: str) -> dict:
-        """
-        Create a file block for Notion page
-        """
-        return {
-            "object": "block",
-            "type": "file",
-            "file": {
-                "type": "external",
-                "external": {
-                    "url": file_url
-                },
-                "caption": [
-                    {
-                        "type": "text",
-                        "text": {
-                            "content": f"Audio: {filename}"
-                        }
-                    }
-                ]
-            }
-        }
