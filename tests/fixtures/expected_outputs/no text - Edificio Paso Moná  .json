@@ -1,0 +1,33 @@
+{
+  "file_name": "no text - Edificio Paso Moná  .m4a",
+  "file_size_bytes": 73400,
+  "file_size_mb": 0.07,
+  "duration_seconds": 8.3,
+  "transcript": "",
+  "transcript_length": 0,
+  "upload_should_succeed": true,
+  "transcription_should_succeed": false,
+  "use_multipart_upload": false,
+  "claude_tags": {
+    "primary_themes": "Testing, Audio Processing",
+    "specific_focus": "File Upload Testing - no text - Edificio Paso Moná  ",
+    "content_types": "Voice Note, Technical Test",
+    "emotional_tones": "Neutral, Professional",
+    "key_topics": "Upload Validation, Audio Testing"
+  },
+  "summary": "Test audio file for no text - Edificio Paso Moná   validation",
+  "deletion_analysis": {
+    "should_delete": true,
+    "confidence": "medium",
+    "reason": "Very short content"
+  },
+  "expected_processing_time_range": [
+    1.0,
+    16.6
+  ],
+  "metadata": {
+    "generated_at": "2025-07-30 20:30:00",
+    "whisper_model": "base",
+    "test_category": "essential"
+  }
+}

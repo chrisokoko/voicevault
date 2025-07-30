@@ -1,0 +1,33 @@
+{
+  "file_name": "background noise - Wallflower Coffee Company 19.m4a",
+  "file_size_bytes": 513802,
+  "file_size_mb": 0.49,
+  "duration_seconds": 59.6,
+  "transcript": "Please create the following artifacts.\nOne artifact on the content and SEO strategy,\none artifact on the care provider and referral strategy,\none artifact on the partnerships and influencer strategy,\none artifact on the earned media and partnerships strategy.\nOne on community engagement, one on paid media,\nalso create an artifact that is things that Odyssey needs to know\nbased on my experience working with two dozen other startups\nat this stage.\nCreate an artifact that is the first of your game plan\nand then create an artifact on how I would measure success.",
+  "transcript_length": 564,
+  "upload_should_succeed": true,
+  "transcription_should_succeed": true,
+  "use_multipart_upload": false,
+  "claude_tags": {
+    "primary_themes": "Testing, Audio Processing",
+    "specific_focus": "File Upload Testing - background noise - Wallflower Coffee Company 19",
+    "content_types": "Voice Note, Technical Test",
+    "emotional_tones": "Neutral, Professional",
+    "key_topics": "Upload Validation, Audio Testing"
+  },
+  "summary": "Please create the following artifacts.\nOne artifact on the content and SEO strategy,\none artifact on...",
+  "deletion_analysis": {
+    "should_delete": false,
+    "confidence": "medium",
+    "reason": "Contains meaningful content"
+  },
+  "expected_processing_time_range": [
+    1.0,
+    119.2
+  ],
+  "metadata": {
+    "generated_at": "2025-07-30 20:30:00",
+    "whisper_model": "base",
+    "test_category": "essential"
+  }
+}

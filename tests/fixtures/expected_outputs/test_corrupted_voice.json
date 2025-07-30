@@ -1,0 +1,34 @@
+{
+  "file_name": "test_corrupted_voice.m4a",
+  "file_size_bytes": 39,
+  "file_size_mb": 3.719329833984375e-05,
+  "duration_seconds": 0.0,
+  "transcript": "",
+  "transcript_length": 0,
+  "upload_should_succeed": false,
+  "transcription_should_succeed": false,
+  "use_multipart_upload": false,
+  "claude_tags": {
+    "primary_themes": "Testing, Audio Processing",
+    "specific_focus": "File Upload Testing - test_corrupted_voice",
+    "content_types": "Voice Note, Technical Test",
+    "emotional_tones": "Neutral, Professional",
+    "key_topics": "Upload Validation, Audio Testing"
+  },
+  "summary": "Test audio file for test_corrupted_voice validation",
+  "deletion_analysis": {
+    "should_delete": true,
+    "confidence": "high",
+    "reason": "Corrupted or invalid audio format"
+  },
+  "expected_processing_time_range": [
+    1.0,
+    0.0
+  ],
+  "metadata": {
+    "generated_at": "2025-07-30 20:30:00",
+    "whisper_model": "base",
+    "test_category": "essential"
+  },
+  "expected_error": "invalid_format"
+}

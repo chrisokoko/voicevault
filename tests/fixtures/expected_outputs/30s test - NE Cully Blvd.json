@@ -1,0 +1,33 @@
+{
+  "file_name": "30s test - NE Cully Blvd.m4a",
+  "file_size_bytes": 283115,
+  "file_size_mb": 0.27,
+  "duration_seconds": 32.0,
+  "transcript": "So I'm thinking about the flow for managing clients in the CRM and I'm thinking\nabout three core pipelines. One pipeline is the pre-client pipeline. These are\npeople that are leads that haven't agreed to do a session yet. The pipeline\nstages for that would be a lead comes in. They've booked a consultation call.",
+  "transcript_length": 312,
+  "upload_should_succeed": true,
+  "transcription_should_succeed": true,
+  "use_multipart_upload": false,
+  "claude_tags": {
+    "primary_themes": "Testing, Audio Processing",
+    "specific_focus": "File Upload Testing - 30s test - NE Cully Blvd",
+    "content_types": "Voice Note, Technical Test",
+    "emotional_tones": "Neutral, Professional",
+    "key_topics": "Upload Validation, Audio Testing"
+  },
+  "summary": "So I'm thinking about the flow for managing clients in the CRM and I'm thinking\nabout three core pip...",
+  "deletion_analysis": {
+    "should_delete": false,
+    "confidence": "medium",
+    "reason": "Contains meaningful content"
+  },
+  "expected_processing_time_range": [
+    1.0,
+    64.0
+  ],
+  "metadata": {
+    "generated_at": "2025-07-30 20:30:00",
+    "whisper_model": "base",
+    "test_category": "essential"
+  }
+}
