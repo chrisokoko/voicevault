@@ -9,9 +9,10 @@ import requests
 import json
 import time
 import hashlib
+import asyncio
 from datetime import datetime
 from typing import Dict, List, Optional, Any
-from notion_client import Client
+from notion_client import Client, AsyncClient
 from notion_client.errors import APIResponseError, RequestTimeoutError
 from config.config import NOTION_TOKEN, NOTION_DATABASE_ID, NOTION_PARENT_PAGE_ID, save_database_id
 from mutagen import File
@@ -24,6 +25,7 @@ class NotionService:
             raise ValueError("NOTION_TOKEN not found in environment variables")
             
         self.client = Client(auth=NOTION_TOKEN)
+        self.async_client = AsyncClient(auth=NOTION_TOKEN)
         self.database_id = NOTION_DATABASE_ID
         
         # Performance tracking
@@ -748,100 +750,116 @@ class NotionService:
 
     # FILE UPLOAD FUNCTIONS
     
-    def add_audio_file_to_page(self, page_id: str, audio_file_path: str) -> bool:
-        """Upload audio file to Notion storage and add to page properties with completion verification"""
-        # Validate file first (pure logic)
+    async def add_audio_file_to_page_async(self, page_id: str, audio_file_path: str) -> Dict[str, Any]:
+        """
+        Upload audio file with async verification - no hardcoded delays
+        Returns detailed result instead of just True/False
+        """
+        # Validate file first
         validation = self._validate_file_for_upload(audio_file_path)
         if not validation["valid"]:
-            logger.error(f"File validation failed: {validation['reason']}")
-            return False
+            return {
+                "success": False,
+                "error_type": "validation_failed",
+                "reason": validation["reason"]
+            }
         
         filename = validation["filename"]
-        logger.info(f"Starting upload process for {filename}")
+        logger.info(f"Starting async upload process for {filename}")
         
-        attempt_count = 0
-        
-        # Keep trying until file is successfully uploaded and verified
-        while True:
-            attempt_count += 1
+        try:
+            # Check if file is already uploaded
+            if self._is_file_already_uploaded(page_id, filename):
+                return {
+                    "success": True,
+                    "status": "already_uploaded",
+                    "reason": f"File {filename} already exists"
+                }
+            
+            # Upload file to Notion storage
+            upload_id = self.upload_file_to_notion_storage(audio_file_path)
+            
+            if not upload_id:
+                return {
+                    "success": False,
+                    "error_type": "upload_failed",
+                    "reason": "Failed to upload file to Notion storage"
+                }
+            
+            # Update page properties to include the audio file
+            properties = {
+                "Audio File": {
+                    "files": [
+                        {
+                            "type": "file_upload",
+                            "file_upload": {
+                                "id": upload_id
+                            },
+                            "name": filename
+                        }
+                    ]
+                }
+            }
             
             try:
-                # Check if file is already uploaded by checking page properties
-                if self._is_file_already_uploaded(page_id, filename):
-                    logger.info(f"File {filename} already uploaded successfully")
-                    return True
-                
-                # Upload file to Notion storage
-                upload_id = self.upload_file_to_notion_storage(audio_file_path)
-                
-                if not upload_id:
-                    error_type = "upload_failed"
-                    if self._should_retry_upload(error_type, False):
-                        delay = self._calculate_retry_delay(attempt_count, False)
-                        logger.warning(f"Upload attempt {attempt_count} failed for {filename}, retrying in {delay}s...")
-                        time.sleep(delay)
-                        continue
-                    else:
-                        logger.error(f"Upload failed and not retryable for {filename}")
-                        return False
-                
-                # Update page properties to include the audio file
-                properties = {
-                    "Audio File": {
-                        "files": [
-                            {
-                                "type": "file_upload",
-                                "file_upload": {
-                                    "id": upload_id
-                                },
-                                "name": filename
-                            }
-                        ]
-                    }
-                }
-                
-                self.client.pages.update(
+                await self.async_client.pages.update(
                     page_id=page_id,
                     properties=properties
                 )
-                
-                # Verify the upload completed by checking if file appears in page properties
-                if self._verify_upload_completion(page_id, filename):
-                    logger.info(f"Successfully uploaded and verified: {filename}")
-                    return True
-                else:
-                    error_type = "verification_failed"
-                    if self._should_retry_upload(error_type, False):
-                        delay = self._calculate_retry_delay(attempt_count, False)
-                        logger.warning(f"Upload completed but verification failed for {filename}, retrying in {delay}s...")
-                        time.sleep(delay)
-                        continue
-                    else:
-                        logger.error(f"Verification failed and not retryable for {filename}")
-                        return False
-                        
-            except (APIResponseError, RequestTimeoutError) as e:
-                error_type = self._extract_error_type_from_exception(e)
-                is_timeout = error_type == "timeout"
-                
-                if self._should_retry_upload(error_type, is_timeout):
-                    delay = self._calculate_retry_delay(attempt_count, is_timeout)
-                    logger.warning(f"Error during upload of {filename} (attempt {attempt_count}): {error_type}, retrying in {delay}s...")
-                    time.sleep(delay)
-                    continue
-                else:
-                    logger.error(f"Non-recoverable error uploading {filename}: {e}")
-                    return False
             except Exception as e:
-                error_type = self._extract_error_type_from_exception(e)
-                logger.error(f"Unexpected error uploading {filename}: {e}")
+                return {
+                    "success": False,
+                    "error_type": "page_update_failed",
+                    "reason": f"Failed to update page properties: {str(e)}"
+                }
+            
+            # Verify upload completion using async polling - NO HARDCODED DELAYS
+            verification_result = await self._verify_upload_completion_async(
+                page_id, filename, upload_id, max_wait_seconds=120
+            )
+            
+            if verification_result["success"]:
+                logger.info(f"Successfully uploaded and verified: {filename}")
+                return {
+                    "success": True,
+                    "status": "upload_complete",
+                    "file_url": verification_result.get("file_url"),
+                    "reason": f"Successfully uploaded and verified {filename}"
+                }
+            else:
+                logger.error(f"Upload verification failed for {filename}: {verification_result['reason']}")
+                return {
+                    "success": False,
+                    "error_type": "verification_failed",
+                    "reason": verification_result["reason"]
+                }
                 
-                if self._should_retry_upload(error_type, False):
-                    delay = self._calculate_retry_delay(attempt_count, False)
-                    time.sleep(delay)
-                    continue
-                else:
-                    return False
+        except Exception as e:
+            logger.error(f"Unexpected error in async upload for {filename}: {e}")
+            return {
+                "success": False,
+                "error_type": "unexpected_error",
+                "reason": str(e)
+            }
+
+    def add_audio_file_to_page(self, page_id: str, audio_file_path: str) -> bool:
+        """
+        Synchronous wrapper for async upload method - maintains backwards compatibility
+        """
+        try:
+            # Run the async method in an event loop
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                result = loop.run_until_complete(
+                    self.add_audio_file_to_page_async(page_id, audio_file_path)
+                )
+                return result["success"]
+            finally:
+                loop.close()
+        except Exception as e:
+            logger.error(f"Error in sync wrapper for upload: {e}")
+            return False
 
     def upload_file_to_notion_storage(self, file_path: str) -> Optional[str]:
         """Upload file to Notion's storage using their official API"""
@@ -1106,25 +1124,152 @@ class NotionService:
             logger.debug(f"Error checking existing upload: {e}")
             return False
     
-    def _verify_upload_completion(self, page_id: str, filename: str) -> bool:
-        """Verify that the file upload completed successfully by checking page properties"""
+    async def _verify_upload_completion_async(self, page_id: str, filename: str, upload_id: str, max_wait_seconds: int = 120) -> Dict[str, Any]:
+        """
+        Verify upload completion by checking upload status and page properties
+        Uses proper async/await instead of hardcoded delays
+        """
         try:
-            # Wait a moment for Notion to process the upload
-            time.sleep(2)
+            # Step 1: Wait for upload to be processed by Notion
+            upload_status = await self._wait_for_upload_status(upload_id, max_wait_seconds)
             
-            response = self.client.pages.retrieve(page_id=page_id)
+            if not upload_status["success"]:
+                return upload_status
+            
+            # Step 2: Verify file appears in page properties
+            page_verification = await self._verify_file_in_page_properties(page_id, filename)
+            
+            return page_verification
+            
+        except Exception as e:
+            logger.error(f"Error in async upload verification: {e}")
+            return {
+                "success": False,
+                "status": "verification_error",
+                "reason": str(e)
+            }
+
+    async def _wait_for_upload_status(self, upload_id: str, max_wait_seconds: int) -> Dict[str, Any]:
+        """
+        Wait for upload to reach 'uploaded' status using exponential backoff
+        This replaces hardcoded time.sleep() with proper async waiting
+        """
+        start_time = time.time()
+        check_interval = 0.1  # Start with 100ms
+        max_interval = 2.0    # Cap at 2 seconds
+        
+        logger.info(f"Waiting for upload {upload_id} to complete...")
+        
+        while time.time() - start_time < max_wait_seconds:
+            try:
+                # Check upload status via Notion API
+                status_response = await self._check_upload_status_async(upload_id)
+                
+                if status_response["status"] == "uploaded":
+                    logger.info(f"Upload {upload_id} completed successfully")
+                    return {
+                        "success": True,
+                        "status": "uploaded"
+                    }
+                elif status_response["status"] == "failed":
+                    logger.error(f"Upload {upload_id} failed: {status_response.get('error_message', 'Unknown error')}")
+                    return {
+                        "success": False,
+                        "status": "failed",
+                        "reason": status_response.get("error_message", "Upload failed")
+                    }
+                elif status_response["status"] == "pending":
+                    # Still processing, wait and check again
+                    logger.debug(f"Upload {upload_id} still pending, checking again in {check_interval}s")
+                    await asyncio.sleep(check_interval)
+                    
+                    # Exponential backoff - but cap the interval
+                    check_interval = min(check_interval * 1.5, max_interval)
+                else:
+                    # Unknown status, wait and try again
+                    logger.debug(f"Upload {upload_id} has unknown status: {status_response.get('status')}")
+                    await asyncio.sleep(check_interval)
+                    check_interval = min(check_interval * 1.5, max_interval)
+                    
+            except Exception as e:
+                logger.warning(f"Error checking upload status, retrying: {e}")
+                await asyncio.sleep(check_interval)
+                check_interval = min(check_interval * 1.5, max_interval)
+        
+        return {
+            "success": False,
+            "status": "timeout",
+            "reason": f"Upload status check timed out after {max_wait_seconds} seconds"
+        }
+
+    async def _check_upload_status_async(self, upload_id: str) -> Dict[str, Any]:
+        """Check upload status using Notion's async API"""
+        try:
+            # Use Notion's file upload status endpoint
+            headers = {
+                'Authorization': f'Bearer {NOTION_TOKEN}',
+                'Notion-Version': '2022-06-28',
+                'Content-Type': 'application/json'
+            }
+            
+            response = requests.get(
+                f'https://api.notion.com/v1/file_uploads/{upload_id}',
+                headers=headers
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                return {
+                    "status": data.get("status", "unknown"),
+                    "error_message": data.get("error_message"),
+                    "expiry_time": data.get("expiry_time")
+                }
+            else:
+                logger.warning(f"Upload status check returned {response.status_code}: {response.text}")
+                return {
+                    "status": "unknown",
+                    "error_message": f"API returned {response.status_code}"
+                }
+                
+        except Exception as e:
+            logger.error(f"Error checking upload status via API: {e}")
+            return {
+                "status": "error", 
+                "error_message": str(e)
+            }
+
+    async def _verify_file_in_page_properties(self, page_id: str, filename: str) -> Dict[str, Any]:
+        """Verify file appears in page properties with valid URL"""
+        try:
+            response = await self.async_client.pages.retrieve(page_id=page_id)
             file_info = self._parse_file_info_from_response(response, filename)
             
             if file_info["upload_complete"]:
-                logger.debug(f"Upload verification successful: {filename} has valid URL")
-                return True
+                logger.info(f"File verification successful: {filename} has valid URL")
+                return {
+                    "success": True,
+                    "status": "verified",
+                    "file_url": file_info.get("file_url") or file_info.get("external_url")
+                }
             elif file_info["found"]:
-                logger.debug(f"Upload verification failed: {filename} found but no URL")
-                return False
+                logger.warning(f"File verification failed: {filename} found but no URL")
+                return {
+                    "success": False,
+                    "status": "no_url",
+                    "reason": "File found in page but has no accessible URL"
+                }
             else:
-                logger.debug(f"Upload verification failed: {filename} not found in page properties")
-                return False
+                logger.warning(f"File verification failed: {filename} not found in page properties")
+                return {
+                    "success": False,
+                    "status": "not_found",
+                    "reason": "File not found in page properties"
+                }
                 
         except Exception as e:
-            logger.error(f"Error verifying upload completion: {e}")
-            return False
+            logger.error(f"Error verifying file in page properties: {e}")
+            return {
+                "success": False,
+                "status": "verification_error", 
+                "reason": str(e)
+            }

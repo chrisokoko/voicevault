@@ -407,6 +407,19 @@ Brief Summary: [1-2 sentence summary]"""
     def format_transcript(self, transcript: str) -> str:
         """Format transcript for better readability while preserving core content (Phase 1)"""
         try:
+            # Estimate token count (rough approximation: 1 token ≈ 4 characters)
+            estimated_tokens = len(transcript) // 4
+            
+            # Choose model and max_tokens based on transcript size
+            if estimated_tokens < 7500:  # Small file - use cheaper Haiku 3.5
+                model = "claude-3-5-haiku-20241022"
+                max_tokens = 8192
+                logger.info(f"Using Claude 3.5 Haiku for small transcript ({estimated_tokens} estimated tokens)")
+            else:  # Large file - use Sonnet 3.5 with higher token limit
+                model = "claude-3-5-sonnet-20241022"  # Use regular Sonnet 3.5 
+                max_tokens = 8192  # Sonnet 3.5 max tokens
+                logger.info(f"Using Claude 3.5 Sonnet for large transcript ({estimated_tokens} estimated tokens)")
+
             prompt = f"""Please improve the readability of this voice memo transcript. Fix grammar, typos, and formatting while preserving ALL the original ideas, words, and meaning. Do not change the core content or voice - just make it more readable.
 
 Rules:
@@ -422,19 +435,40 @@ Original transcript: "{transcript}"
 
 Only output the formatted transcript:"""
             
-            response = self.client.messages.create(
-                model="claude-3-5-sonnet-20241022",
-                max_tokens=2000,
-                temperature=0.2,  # Lower temperature for precise formatting
-                messages=[
-                    {
-                        "role": "user", 
-                        "content": prompt
-                    }
-                ]
-            )
-            
-            formatted = response.content[0].text.strip()
+            # Use streaming for large transcripts with Claude 3.5 Sonnet
+            if model == "claude-3-5-sonnet-20241022" and estimated_tokens >= 7500:
+                logger.info("Using streaming mode for large transcript")
+                formatted_chunks = []
+                
+                with self.client.messages.stream(
+                    model=model,
+                    max_tokens=max_tokens,
+                    temperature=0.2,
+                    messages=[
+                        {
+                            "role": "user", 
+                            "content": prompt
+                        }
+                    ]
+                ) as stream:
+                    for text in stream.text_stream:
+                        formatted_chunks.append(text)
+                
+                formatted = ''.join(formatted_chunks).strip()
+            else:
+                # Regular non-streaming for smaller transcripts
+                response = self.client.messages.create(
+                    model=model,
+                    max_tokens=max_tokens,
+                    temperature=0.2,
+                    messages=[
+                        {
+                            "role": "user", 
+                            "content": prompt
+                        }
+                    ]
+                )
+                formatted = response.content[0].text.strip()
             logger.info(f"Formatted transcript: {len(formatted)} characters")
             return formatted
             
