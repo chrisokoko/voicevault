@@ -312,7 +312,8 @@ class NotionService:
                    audio_file_path: str,
                    audio_duration: Optional[float] = None,
                    deletion_analysis: Optional[Dict] = None,
-                   original_transcript: Optional[str] = None) -> Optional[str]:
+                   original_transcript: Optional[str] = None,
+                   content_type: Optional[str] = None) -> Optional[str]:
         """Create a new page in the Notion database with the voice memo data"""
         try:
             # Extract audio metadata
@@ -405,6 +406,11 @@ class NotionService:
                 },
                 "Audio File": {
                     "files": []  # Will be populated after file upload
+                },
+                "Audio Content Type": {
+                    "select": {
+                        "name": content_type if content_type else "Unknown"
+                    }
                 },
                 "Flagged for Deletion": {
                     "checkbox": deletion_analysis.get('should_delete', False) if deletion_analysis else False

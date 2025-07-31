@@ -31,6 +31,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from audio_service import AudioService
 from claude_service import ClaudeService
 from notion_service import NotionService
+from audio_classifier import YAMNetAudioClassifier
 from utils import validate_audio_file, clean_filename, format_duration_human
 from config.config import (
     AUDIO_FOLDER, SUPPORTED_FORMATS,
@@ -60,6 +61,7 @@ class OngoingVoiceMemoProcessor:
         self.audio_service = AudioService()
         self.claude_service = ClaudeService(taxonomy_file=taxonomy_file)
         self.notion_service = None
+        self.audio_classifier = YAMNetAudioClassifier()
         
         # Performance tracking
         self.session_stats = {
@@ -176,7 +178,24 @@ class OngoingVoiceMemoProcessor:
             duration_str = format_duration_human(metadata['duration_seconds'])
             logger.info(f"Duration: {duration_str}")
             
-            # Step 3: Transcribe the audio
+            # Step 3: Classify audio content type
+            logger.info("🎵 Classifying audio content type...")
+            try:
+                audio_classification = self.audio_classifier.classify_audio(str(file_path))
+                content_type = audio_classification['primary_class']
+                classification_confidence = audio_classification['confidence']
+                logger.info(f"Audio classified as: {content_type} (confidence: {classification_confidence:.3f})")
+            except Exception as e:
+                logger.warning(f"Audio classification failed: {e}")
+                # Fallback
+                audio_classification = {
+                    'primary_class': 'Unknown',
+                    'confidence': 0.0,
+                    'top_yamnet_predictions': []
+                }
+                content_type = 'Unknown'
+            
+            # Step 4: Transcribe the audio
             logger.info("🎙️ Transcribing audio...")
             transcript = self.audio_service.transcribe_audio(str(file_path), use_whisper_first=True)
             
@@ -186,9 +205,14 @@ class OngoingVoiceMemoProcessor:
             
             logger.info(f"Transcription complete: {len(transcript)} characters")
             
-            # Step 4: Comprehensive Claude processing (single API call)
+            # Step 5: Comprehensive Claude processing with audio type context
             logger.info("🤖 Processing transcript with Claude (comprehensive analysis)...")
-            claude_result = self.claude_service.process_transcript_complete(transcript, file_path.name)
+            claude_result = self.claude_service.process_transcript_complete(
+                transcript, 
+                file_path.name, 
+                audio_type=content_type,
+                audio_classification=audio_classification
+            )
             
             # Extract results
             title = claude_result['title']
@@ -248,7 +272,8 @@ class OngoingVoiceMemoProcessor:
                 audio_file_path=str(file_path),
                 audio_duration=metadata['duration_seconds'],
                 deletion_analysis=deletion_analysis,
-                original_transcript=transcript
+                original_transcript=transcript,
+                content_type=content_type
             )
             
             if page_id:

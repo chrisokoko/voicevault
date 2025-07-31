@@ -150,16 +150,30 @@ class ClaudeService:
 
     # PHASE 1 FUNCTIONS
 
-    def process_transcript_complete(self, transcript: str, filename: str = '') -> Dict[str, Any]:
+    def process_transcript_complete(self, transcript: str, filename: str = '', audio_type: str = None, audio_classification: Dict = None) -> Dict[str, Any]:
         """Single comprehensive Claude API call to get everything we need from a transcript"""
         try:
+            # Build audio context information
+            audio_context = ""
+            if audio_type and audio_classification:
+                audio_context = f"""
+**AUDIO CLASSIFICATION:**
+- Content Type: {audio_type}
+- Confidence: {audio_classification.get('confidence', 0.0):.3f}
+- Top Predictions: {', '.join([pred[0] for pred in audio_classification.get('top_yamnet_predictions', [])[:3]])}
+
+**IMPORTANT CONTEXT:** This audio was classified as "{audio_type}". 
+- If this is music/singing and the transcript is garbled, repetitive numbers, or nonsensical, please note that this is likely a musical recording without clear lyrics.
+- If the transcript doesn't make sense for the detected audio type, mention this in your analysis.
+"""
+
             prompt = f"""Analyze this voice memo transcript and provide a comprehensive analysis. Please provide ALL of the following in your response:
 
 **TRANSCRIPT:**
 "{transcript}"
 
 **FILENAME:** {filename}
-
+{audio_context}
 Please analyze this voice memo and provide:
 
 1. **TITLE** - Create a specific, compelling title (3-8 words) that captures the essence of the content. Use proper Title Case capitalization.

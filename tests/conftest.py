@@ -15,8 +15,8 @@ import time
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.notion_uploader import NotionUploader
-from src.claude_tagger import ClaudeTagger
+from src.notion_service import NotionService
+from src.claude_service import ClaudeService
 from config.config import AUDIO_FOLDER
 
 class TestFileManager:
@@ -239,34 +239,34 @@ def mock_notion_client():
     return mock_client
 
 @pytest.fixture
-def mock_notion_uploader(mock_notion_client):
-    """Mock NotionUploader for unit tests"""
-    with patch('src.notion_uploader.Client') as mock_client_class:
+def mock_notion_service(mock_notion_client):
+    """Mock NotionService for unit tests"""
+    with patch('src.notion_service.Client') as mock_client_class:
         mock_client_class.return_value = mock_notion_client
         
         # Mock the upload_file_to_notion_storage method
-        with patch.object(NotionUploader, 'upload_file_to_notion_storage') as mock_upload:
+        with patch.object(NotionService, 'upload_file_to_notion_storage') as mock_upload:
             mock_upload.return_value = 'test-upload-id'
             
-            uploader = NotionUploader()
-            yield uploader
+            service = NotionService()
+            yield service
 
 @pytest.fixture
-def real_notion_uploader():
-    """Real NotionUploader for integration tests"""
+def real_notion_service():
+    """Real NotionService for integration tests"""
     try:
-        uploader = NotionUploader()
-        if not uploader.check_database_exists():
+        service = NotionService()
+        if not service.check_database_exists():
             pytest.skip("Notion database not accessible for integration tests")
-        return uploader
+        return service
     except Exception as e:
-        pytest.skip(f"Cannot initialize real NotionUploader: {e}")
+        pytest.skip(f"Cannot initialize real NotionService: {e}")
 
 @pytest.fixture
-def mock_claude_tagger():
-    """Mock ClaudeTagger for testing"""
-    mock_tagger = Mock()
-    mock_tagger.process_transcript.return_value = {
+def mock_claude_service():
+    """Mock ClaudeService for testing"""
+    mock_service = Mock()
+    mock_service.process_transcript.return_value = {
         'claude_tags': {
             'primary_themes': 'Test Theme',
             'specific_focus': 'Test Focus',
@@ -282,7 +282,7 @@ def mock_claude_tagger():
         },
         'formatted_transcript': 'This is a formatted test transcript.'
     }
-    return mock_tagger
+    return mock_service
 
 @pytest.fixture
 def temp_audio_file():
