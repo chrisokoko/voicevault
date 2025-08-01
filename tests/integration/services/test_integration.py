@@ -232,7 +232,7 @@ class TestUploadResilience:
         page_id = real_notion_uploader.create_page(
             title=f"Verification Test: {medium_file.name}",
             transcript="Test transcript for verification",
-            claude_tags={'primary_themes': 'Testing'},
+            claude_tags={'tags': 'Testing, Integration'},
             summary="Test summary",
             filename=medium_file.name,
             audio_file_path=str(medium_file)
@@ -348,8 +348,8 @@ class TestEndToEndWorkflow:
         assert len(audio_files) > 0, "Page should have uploaded audio file"
         
         # Check tags were set
-        primary_themes = page_response.get('properties', {}).get('Primary Themes', {}).get('multi_select', [])
-        assert len(primary_themes) > 0, "Page should have primary themes"
+        tags_field = page_response.get('properties', {}).get('Tags', {}).get('rich_text', [])
+        assert len(tags_field) > 0 and tags_field[0].get('text', {}).get('content', ''), "Page should have tags"
         
         logger.info(f"✅ All workflow components verified for {medium_file.name}")
 
@@ -478,7 +478,8 @@ class TestAsyncUploadIntegration:
         """Test async upload with small file using real Notion API"""
         
         # Initialize NotionService (the new async-enabled service)
-        notion_service = NotionService()
+        from config.config import DATABASE_ID
+        notion_service = NotionService(DATABASE_ID)
         
         if not notion_service.check_database_exists():
             pytest.skip("Notion database not accessible")
@@ -533,7 +534,8 @@ class TestAsyncUploadIntegration:
     async def test_async_large_file_upload_real_api(self, large_file, test_transcript_data, performance_metrics):
         """Test async upload with large file using real Notion API - Critical test for Issue #1"""
         
-        notion_service = NotionService()
+        from config.config import DATABASE_ID
+        notion_service = NotionService(DATABASE_ID)
         
         if not notion_service.check_database_exists():
             pytest.skip("Notion database not accessible")
@@ -592,7 +594,8 @@ class TestAsyncUploadIntegration:
     async def test_async_upload_error_handling(self, performance_metrics):
         """Test async upload error handling with invalid file"""
         
-        notion_service = NotionService()
+        from config.config import DATABASE_ID
+        notion_service = NotionService(DATABASE_ID)
         
         if not notion_service.check_database_exists():
             pytest.skip("Notion database not accessible")
@@ -628,7 +631,8 @@ class TestAsyncUploadIntegration:
     async def test_async_vs_sync_comparison(self, small_file, test_transcript_data, performance_metrics):
         """Compare async vs sync upload methods to verify async is working"""
         
-        notion_service = NotionService()
+        from config.config import DATABASE_ID
+        notion_service = NotionService(DATABASE_ID)
         
         if not notion_service.check_database_exists():
             pytest.skip("Notion database not accessible")

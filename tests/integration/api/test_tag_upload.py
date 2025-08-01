@@ -20,13 +20,9 @@ def test_simple_page_creation():
     test_title = "Test Multi-Select Tags"
     test_transcript = "This is a test transcript for debugging multi-select tag issues."
     
-    # Simple tags that should work
+    # Simple consolidated tags
     claude_tags = {
-        'primary_themes': 'Test Theme',
-        'specific_focus': 'Debugging',  
-        'content_types': 'Test Content',
-        'emotional_tones': 'Neutral',
-        'key_topics': 'Testing, Debugging'
+        'tags': 'Test Theme, Debugging, Test Content, Neutral, Testing'
     }
     
     print("Testing simple page creation with multi-select tags...")

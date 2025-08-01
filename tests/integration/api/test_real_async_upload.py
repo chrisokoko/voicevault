@@ -52,8 +52,7 @@ async def test_real_async_upload(test_file_path: str):
             title="[TEST] Async Upload Test - " + os.path.basename(test_file),
             transcript="This is a test page for async upload verification",
             claude_tags={
-                "primary_themes": "Testing",
-                "content_types": "Test Upload"
+                "tags": "Testing, Upload Verification, Integration"
             },
             summary="Test page for async upload functionality",
             filename=os.path.basename(test_file),

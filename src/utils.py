@@ -210,14 +210,12 @@ def validate_notion_properties(properties: dict) -> Tuple[bool, List[str]]:
     elif 'title' not in properties['Title'] or not properties['Title']['title']:
         errors.append("Title property must have 'title' field with content")
     
-    # Validate multi-select properties
-    multi_select_props = ['Primary Themes', 'Specific Focus', 'Content Types', 'Emotional Tones', 'Key Topics', 'Tags']
-    for prop in multi_select_props:
-        if prop in properties:
-            if 'multi_select' not in properties[prop]:
-                errors.append(f"{prop} must have 'multi_select' field")
-            elif not isinstance(properties[prop]['multi_select'], list):
-                errors.append(f"{prop} multi_select must be a list")
+    # Validate Tags field (now rich_text instead of multi_select)
+    if 'Tags' in properties:
+        if 'rich_text' not in properties['Tags']:
+            errors.append("Tags must have 'rich_text' field")
+        elif not isinstance(properties['Tags']['rich_text'], list):
+            errors.append("Tags rich_text must be a list")
     
     # Validate rich text properties
     rich_text_props = ['Summary', 'Duration', 'File Size', 'Deletion Reason']

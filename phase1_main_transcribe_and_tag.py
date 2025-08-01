@@ -66,11 +66,16 @@ class Phase1Processor:
         # Initialize Notion service if not dry run
         if not dry_run:
             try:
-                self.notion_service = NotionService()
-                if not self.notion_service.check_database_exists():
-                    logger.error("Cannot access Notion database. Check your configuration.")
+                from config.config import DATABASE_ID
+                if not DATABASE_ID:
+                    logger.error("DATABASE_ID not configured in config.py. Please set a valid database ID.")
                     sys.exit(1)
-                logger.info("Successfully connected to Notion database")
+                
+                self.notion_service = NotionService(DATABASE_ID)
+                if not self.notion_service.check_database_exists():
+                    logger.error("Cannot access Notion database. Check DATABASE_ID in config.py.")
+                    sys.exit(1)
+                logger.info(f"Successfully connected to Notion database: {DATABASE_ID}")
             except Exception as e:
                 logger.error(f"Failed to initialize Notion service: {e}")
                 sys.exit(1)
@@ -167,11 +172,7 @@ class Phase1Processor:
                 logger.info(f"  📁 Filename: {file_path.name}")
                 logger.info(f"  ⏱️  Duration: {duration_str}")
                 logger.info(f"  📋 Summary: {summary[:100]}...")
-                logger.info(f"  🏷️  Primary Themes: {claude_tags.get('primary_themes', 'N/A')}")
-                logger.info(f"  🎯 Specific Focus: {claude_tags.get('specific_focus', 'N/A')}")
-                logger.info(f"  📄 Content Types: {claude_tags.get('content_types', 'N/A')}")
-                logger.info(f"  😊 Emotional Tones: {claude_tags.get('emotional_tones', 'N/A')}")
-                logger.info(f"  🔑 Key Topics: {claude_tags.get('key_topics', 'N/A')}")
+                logger.info(f"  🏷️  Tags: {claude_tags.get('tags', 'N/A')}")
                 logger.info(f"  🗑️  Flagged for Deletion: {deletion_analysis['should_delete']} - {deletion_analysis['reason']}")
                 return True
             

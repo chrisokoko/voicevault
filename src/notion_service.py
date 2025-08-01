@@ -14,19 +14,22 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any
 from notion_client import Client, AsyncClient
 from notion_client.errors import APIResponseError, RequestTimeoutError
-from config.config import NOTION_TOKEN, NOTION_DATABASE_ID, NOTION_PARENT_PAGE_ID, save_database_id
+from config.config import NOTION_TOKEN
 from mutagen import File
 
 logger = logging.getLogger(__name__)
 
 class NotionService:
-    def __init__(self):
+    def __init__(self, database_id: str):
         if not NOTION_TOKEN:
             raise ValueError("NOTION_TOKEN not found in environment variables")
+        
+        if not database_id:
+            raise ValueError("Database ID is required. Please provide a valid Notion database ID.")
             
         self.client = Client(auth=NOTION_TOKEN)
         self.async_client = AsyncClient(auth=NOTION_TOKEN)
-        self.database_id = NOTION_DATABASE_ID
+        self.database_id = database_id
         
         # Performance tracking
         self.api_calls = 0
@@ -42,20 +45,6 @@ class NotionService:
         self.last_request_time = 0
         self.min_request_interval = 0.1  # 100ms between requests
         
-        # If no database ID, create one using the parent page
-        if not self.database_id and NOTION_PARENT_PAGE_ID:
-            logger.info("No database ID provided, creating new Voice Memos database...")
-            self.database_id = self.create_database_if_needed(NOTION_PARENT_PAGE_ID)
-            if not self.database_id:
-                raise ValueError("Failed to create Notion database")
-            else:
-                # Save the database ID for future use
-                if save_database_id(self.database_id):
-                    logger.info(f"Saved database ID {self.database_id} to config file")
-                else:
-                    logger.warning("Failed to save database ID to config file")
-        elif not self.database_id:
-            raise ValueError("NOTION_DATABASE_ID or NOTION_PARENT_PAGE_ID must be provided")
 
     # PERFORMANCE AND CACHING FUNCTIONS
     
@@ -173,123 +162,6 @@ class NotionService:
             logger.error(f"Error checking Notion database: {e}")
             return False
 
-    def create_database_if_needed(self, parent_page_id: str) -> Optional[str]:
-        """Create a new database for voice memos if needed"""
-        try:
-            database_properties = {
-                "Title": {
-                    "title": {}
-                },
-                "Primary Themes": {
-                    "multi_select": {
-                        "options": []
-                    }
-                },
-                "Specific Focus": {
-                    "multi_select": {
-                        "options": []
-                    }
-                },
-                "Content Types": {
-                    "multi_select": {
-                        "options": []
-                    }
-                },
-                "Emotional Tones": {
-                    "multi_select": {
-                        "options": []
-                    }
-                },
-                "Key Topics": {
-                    "multi_select": {
-                        "options": []
-                    }
-                },
-                "Tags": {
-                    "multi_select": {
-                        "options": []
-                    }
-                },
-                "Summary": {
-                    "rich_text": {}
-                },
-                "Duration": {
-                    "rich_text": {}
-                },
-                "Duration (Seconds)": {
-                    "number": {}
-                },
-                "File Created": {
-                    "date": {}
-                },
-                "File Size": {
-                    "rich_text": {}
-                },
-                "Audio File": {
-                    "files": {}
-                },
-                "Flagged for Deletion": {
-                    "checkbox": {}
-                },
-                "Deletion Confidence": {
-                    "select": {
-                        "options": [
-                            {"name": "High", "color": "red"},
-                            {"name": "Medium", "color": "yellow"},
-                            {"name": "Low", "color": "green"}
-                        ]
-                    }
-                },
-                "Deletion Reason": {
-                    "rich_text": {}
-                },
-                "Audio Content Type": {
-                    "select": {
-                        "options": [
-                            {"name": "Music", "color": "blue"},
-                            {"name": "Speech", "color": "green"},
-                            {"name": "Unknown", "color": "gray"}
-                        ]
-                    }
-                },
-                "Life Area": {
-                    "multi_select": {
-                        "options": []
-                    }
-                },
-                "Topic": {
-                    "multi_select": {
-                        "options": []
-                    }
-                }
-            }
-            
-            response = self.client.databases.create(
-                parent={
-                    "type": "page_id",
-                    "page_id": parent_page_id
-                },
-                title=[
-                    {
-                        "type": "text",
-                        "text": {
-                            "content": "Voice Memos"
-                        }
-                    }
-                ],
-                properties=database_properties
-            )
-            
-            database_id = response["id"]
-            logger.info(f"Created new Notion database: {database_id}")
-            return database_id
-            
-        except APIResponseError as e:
-            logger.error(f"Error creating Notion database: {e}")
-            return None
-        except Exception as e:
-            logger.error(f"Error creating Notion database: {e}")
-            return None
 
     def query_all_pages(self) -> List[Dict[str, Any]]:
         """Query all pages from the database"""
@@ -338,26 +210,8 @@ class NotionService:
             # Extract audio metadata
             metadata = self.extract_audio_metadata(audio_file_path)
             
-            # Helper function to parse comma-separated tags into multi-select format
-            def parse_tags_to_multiselect(tag_string: str) -> List[Dict[str, str]]:
-                if not tag_string:
-                    return []
-                # Parse tags, clean brackets if present, and format for Notion
-                tags = tag_string.replace('[', '').replace(']', '').split(',')
-                return [{"name": tag.strip()} for tag in tags if tag.strip()]
-            
-            # Process each tag category
-            primary_themes_tags = parse_tags_to_multiselect(claude_tags.get('primary_themes', ''))
-            specific_focus_tags = parse_tags_to_multiselect(claude_tags.get('specific_focus', ''))
-            content_types_tags = parse_tags_to_multiselect(claude_tags.get('content_types', ''))
-            emotional_tones_tags = parse_tags_to_multiselect(claude_tags.get('emotional_tones', ''))
-            key_topics_tags = parse_tags_to_multiselect(claude_tags.get('key_topics', ''))
-            
-            # Combine all tags for the main Tags field (for backward compatibility)
-            all_tags = []
-            for tag_list in [primary_themes_tags, specific_focus_tags, content_types_tags, emotional_tones_tags, key_topics_tags[:6]]:
-                all_tags.extend(tag_list)
-            unique_tags = list({tag['name']: tag for tag in all_tags}.values())[:15]  # Remove duplicates, limit to 15
+            # Get consolidated tags as comma-separated string
+            tags_string = claude_tags.get('tags', '')
             
             # Prepare properties for the Notion page
             properties = {
@@ -370,24 +224,15 @@ class NotionService:
                         }
                     ]
                 },
-                "Primary Themes": {
-                    "multi_select": primary_themes_tags
-                } if primary_themes_tags else None,
-                "Specific Focus": {
-                    "multi_select": specific_focus_tags
-                } if specific_focus_tags else None,
-                "Content Types": {
-                    "multi_select": content_types_tags
-                } if content_types_tags else None,
-                "Emotional Tones": {
-                    "multi_select": emotional_tones_tags
-                } if emotional_tones_tags else None,
-                "Key Topics": {
-                    "multi_select": key_topics_tags
-                } if key_topics_tags else None,
                 "Tags": {
-                    "multi_select": unique_tags[:10]  # Already formatted as list of dicts
-                },
+                    "rich_text": [
+                        {
+                            "text": {
+                                "content": tags_string
+                            }
+                        }
+                    ]
+                } if tags_string else None,
                 "Summary": {
                     "rich_text": [
                         {
@@ -630,30 +475,26 @@ class NotionService:
         # Add Claude analysis in a toggle
         analysis_children = []
         
-        tag_items = [
-            ("Primary Themes", claude_tags.get('primary_themes', 'N/A')),
-            ("Specific Focus", claude_tags.get('specific_focus', 'N/A')),
-            ("Content Types", claude_tags.get('content_types', 'N/A')),
-            ("Emotional Tones", claude_tags.get('emotional_tones', 'N/A')),
-            ("Key Topics", claude_tags.get('key_topics', 'N/A'))
-        ]
-        
-        for tag_name, tag_value in tag_items:
-            if tag_value and tag_value != 'N/A':
-                analysis_children.append({
-                    "object": "block",
-                    "type": "bulleted_list_item",
-                    "bulleted_list_item": {
-                        "rich_text": [
-                            {
-                                "type": "text",
-                                "text": {
-                                    "content": f"{tag_name}: {tag_value}"
-                                }
+        # Add tags summary if available
+        tags_content = claude_tags.get('tags', 'N/A')
+        if tags_content and tags_content != 'N/A':
+            analysis_children.append({
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [
+                        {
+                            "type": "text",
+                            "text": {
+                                "content": f"Tags: {tags_content}"
+                            },
+                            "annotations": {
+                                "bold": True
                             }
-                        ]
-                    }
-                })
+                        }
+                    ]
+                }
+            })
         
         if claude_tags.get('brief_summary'):
             analysis_children.append({

@@ -45,7 +45,12 @@ class Phase2BucketCreator:
     def __init__(self):
         # Initialize services
         self.claude_service = ClaudeService()  # Phase 2 uses default taxonomy for analysis
-        self.notion_service = NotionService()
+        from config.config import DATABASE_ID
+        if not DATABASE_ID:
+            logger.error("DATABASE_ID not configured in config.py. Please set a valid database ID.")
+            sys.exit(1)
+        
+        self.notion_service = NotionService(DATABASE_ID)
         
         # Verify Notion connection
         if not self.notion_service.check_database_exists():
@@ -77,30 +82,10 @@ class Phase2BucketCreator:
                 # Extract standardized tag categories
                 freeform_tags = {}
                 
-                # Primary Themes
-                primary_themes = properties.get('Primary Themes', {}).get('multi_select', [])
-                if primary_themes:
-                    freeform_tags['primary_themes'] = ', '.join([tag['name'] for tag in primary_themes])
-                
-                # Specific Focus
-                specific_focus = properties.get('Specific Focus', {}).get('multi_select', [])
-                if specific_focus:
-                    freeform_tags['specific_focus'] = ', '.join([tag['name'] for tag in specific_focus])
-                
-                # Content Types
-                content_types = properties.get('Content Types', {}).get('multi_select', [])
-                if content_types:
-                    freeform_tags['content_types'] = ', '.join([tag['name'] for tag in content_types])
-                
-                # Emotional Tones
-                emotional_tones = properties.get('Emotional Tones', {}).get('multi_select', [])
-                if emotional_tones:
-                    freeform_tags['emotional_tones'] = ', '.join([tag['name'] for tag in emotional_tones])
-                
-                # Key Topics
-                key_topics = properties.get('Key Topics', {}).get('multi_select', [])
-                if key_topics:
-                    freeform_tags['key_topics'] = ', '.join([tag['name'] for tag in key_topics])
+                # Tags (consolidated field)
+                tags_field = properties.get('Tags', {}).get('rich_text', [])
+                if tags_field and len(tags_field) > 0:
+                    freeform_tags['tags'] = tags_field[0].get('text', {}).get('content', '')
                 
                 # Only add pages that have some freeform tags
                 if any(freeform_tags.values()):

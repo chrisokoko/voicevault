@@ -201,7 +201,7 @@ class TestUploadPerformance:
             page_id = real_notion_uploader.create_page(
                 title=f"Timeout Test: {largest_file.name}",
                 transcript="Test transcript for timeout scenario",
-                claude_tags={'primary_themes': 'Timeout Testing'},
+                claude_tags={'tags': 'Timeout Testing, Performance'},
                 summary="Testing timeout handling",
                 filename=largest_file.name,
                 audio_file_path=str(largest_file)

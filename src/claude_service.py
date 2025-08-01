@@ -186,11 +186,7 @@ class ClaudeService:
                 "formatted_transcript": transcript,
                 "summary": "",
                 "claude_tags": {
-                    "primary_themes": "",
-                    "specific_focus": "",
-                    "content_types": "",
-                    "emotional_tones": "",
-                    "key_topics": ""
+                    "tags": ""
                 },
                 "deletion_analysis": {
                     'should_delete': False,
@@ -206,11 +202,7 @@ class ClaudeService:
             "formatted_transcript": "",
             "summary": "",
             "claude_tags": {
-                "primary_themes": "",
-                "specific_focus": "",
-                "content_types": "",
-                "emotional_tones": "",
-                "key_topics": ""
+                "tags": ""
             },
             "deletion_analysis": {
                 'should_delete': False,
@@ -234,16 +226,8 @@ class ClaudeService:
             elif line_stripped.startswith("SUMMARY:"):
                 current_section = None
                 result["summary"] = line_stripped.replace("SUMMARY:", "").strip()
-            elif line_stripped.startswith("PRIMARY_THEMES:"):
-                result["claude_tags"]["primary_themes"] = line_stripped.replace("PRIMARY_THEMES:", "").strip()
-            elif line_stripped.startswith("SPECIFIC_FOCUS:"):
-                result["claude_tags"]["specific_focus"] = line_stripped.replace("SPECIFIC_FOCUS:", "").strip()
-            elif line_stripped.startswith("CONTENT_TYPES:"):
-                result["claude_tags"]["content_types"] = line_stripped.replace("CONTENT_TYPES:", "").strip()
-            elif line_stripped.startswith("EMOTIONAL_TONES:"):
-                result["claude_tags"]["emotional_tones"] = line_stripped.replace("EMOTIONAL_TONES:", "").strip()
-            elif line_stripped.startswith("KEY_TOPICS:"):
-                result["claude_tags"]["key_topics"] = line_stripped.replace("KEY_TOPICS:", "").strip()
+            elif line_stripped.startswith("TAGS:"):
+                result["claude_tags"]["tags"] = line_stripped.replace("TAGS:", "").strip()
             elif line_stripped.startswith("DELETION_FLAG:"):
                 flag_value = line_stripped.replace("DELETION_FLAG:", "").strip().lower()
                 result["deletion_analysis"]["should_delete"] = flag_value == 'true'
@@ -264,40 +248,24 @@ class ClaudeService:
     def generate_freeform_tags(self, transcript: str) -> Dict[str, str]:
         """Generate standardized multi-select tags from transcript (Phase 1)"""
         try:
-            prompt = f"""Analyze this voice memo and create standardized tags. Each tag should be 1-3 words, properly capitalized (Title Case), no slashes.
+            prompt = f"""Analyze this voice memo and create 5-10 relevant tags that best describe the content.
 
 **TRANSCRIPT:**
 "{transcript}"
 
-**Generate tags for these categories:**
-
-1. **Primary Themes** (1-3 words each, pick 1-2 main themes):
-   Examples: "Inner Child Work", "Spiritual Practice", "Relationship Boundaries"
-
-2. **Specific Focus** (1-3 words each, pick 1-2 specific aspects):
-   Examples: "Male Emotional Intelligence", "Sacred Sexuality", "Personal Ceremony"
-
-3. **Content Types** (1-3 words each, pick 1-2 types):
-   Examples: "Personal Reflection", "Instructional Guidance", "Emotional Processing", "Philosophical Insight", "Affirmation Letter"
-
-4. **Emotional Tones** (1-2 words each, pick 1-2 main tones):
-   Examples: "Contemplative", "Vulnerable", "Nurturing", "Triggered", "Peaceful"
-
-5. **Key Topics** (1-3 words each, pick 3-6 specific topics):
-   Examples: "Physical Touch", "Inner Peace", "Spiritual Journey", "Emotional Safety"
-
-**IMPORTANT FORMATTING RULES:**
-- Each tag must be 1-3 words maximum
+**TAGGING INSTRUCTIONS:**
+- Create 5-10 tags total (not more, not less)
+- Each tag should be 1-3 words maximum
 - Use Title Case (First Letter Capitalized)
 - No slashes or special characters except spaces
+- Choose the most important and descriptive tags covering themes, focus areas, content types, emotional tones, and key topics
 - Be specific but concise
 
+**Examples of good tags:**
+"Inner Child Work", "Spiritual Practice", "Personal Reflection", "Contemplative", "Vulnerable", "Physical Touch", "Inner Peace", "Relationship Boundaries"
+
 **Format your response as:**
-Primary Themes: [tag1, tag2]
-Specific Focus: [tag1, tag2] 
-Content Types: [tag1, tag2]
-Emotional Tones: [tag1, tag2]
-Key Topics: [tag1, tag2, tag3, tag4, tag5, tag6]
+Tags: [tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8]
 Brief Summary: [1-2 sentence summary]"""
             
             response = self.client.messages.create(
@@ -320,22 +288,14 @@ Brief Summary: [1-2 sentence summary]"""
         except Exception as e:
             logger.error(f"Error generating free-form tags: {e}")
             return {
-                "primary_themes": "",
-                "specific_focus": "",
-                "content_types": "",
-                "emotional_tones": "",
-                "key_topics": "",
+                "tags": "",
                 "brief_summary": ""
             }
 
     def _parse_freeform_response(self, response_text: str) -> Dict[str, str]:
         """Parse the standardized multi-select tagging response"""
         tags = {
-            "primary_themes": "",
-            "specific_focus": "",
-            "content_types": "",
-            "emotional_tones": "",
-            "key_topics": "",
+            "tags": "",
             "brief_summary": ""
         }
         
@@ -343,16 +303,8 @@ Brief Summary: [1-2 sentence summary]"""
         
         for line in lines:
             line = line.strip()
-            if line.startswith("Primary Themes:"):
-                tags["primary_themes"] = line.replace("Primary Themes:", "").strip()
-            elif line.startswith("Specific Focus:"):
-                tags["specific_focus"] = line.replace("Specific Focus:", "").strip()
-            elif line.startswith("Content Types:"):
-                tags["content_types"] = line.replace("Content Types:", "").strip()
-            elif line.startswith("Emotional Tones:"):
-                tags["emotional_tones"] = line.replace("Emotional Tones:", "").strip()
-            elif line.startswith("Key Topics:"):
-                tags["key_topics"] = line.replace("Key Topics:", "").strip()
+            if line.startswith("Tags:"):
+                tags["tags"] = line.replace("Tags:", "").strip()
             elif line.startswith("Brief Summary:"):
                 tags["brief_summary"] = line.replace("Brief Summary:", "").strip()
         

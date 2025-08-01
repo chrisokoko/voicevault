@@ -35,12 +35,7 @@ Please analyze this creative content and provide:
 
 3. **SUMMARY** - Create a 2-3 sentence summary describing this as a creative/musical recording, mentioning any identifiable musical elements or themes.
 
-4. **STANDARDIZED TAGS** - Create tags appropriate for creative content:
-   - Primary Themes: Examples: "Musical Creation", "Creative Expression", "Artistic Practice"
-   - Specific Focus: Examples: "Instrumental Music", "Vocal Performance", "Song Composition"  
-   - Content Types: Examples: "Musical Recording", "Creative Work", "Artistic Expression"
-   - Emotional Tones: Examples: "Creative", "Expressive", "Melodic", "Rhythmic"
-   - Key Topics: Examples: "Music", "Creativity", "Artistic Process", "Musical Exploration"
+4. **TAGS** - Create 5-10 relevant tags (1-3 words each) that best describe this creative content. Choose the most important and descriptive tags from themes, focus areas, content types, emotional tones, and key topics. Examples: "Musical Creation", "Creative Expression", "Instrumental Music", "Artistic Practice", "Musical Exploration"
 
 5. **DELETION ANALYSIS** - For creative content:
    - KEEP all music/creative recordings unless they are clearly test recordings or accidental captures
@@ -55,11 +50,7 @@ PROCESSED_CONTENT:
 
 SUMMARY: [2-3 sentence summary here]
 
-PRIMARY_THEMES: [tag1, tag2]
-SPECIFIC_FOCUS: [tag1, tag2] 
-CONTENT_TYPES: [tag1, tag2]
-EMOTIONAL_TONES: [tag1, tag2]
-KEY_TOPICS: [tag1, tag2, tag3, tag4, tag5, tag6]
+TAGS: [tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8]
 
 DELETION_FLAG: [true/false]
 DELETION_CONFIDENCE: [high/medium/low]
@@ -88,12 +79,7 @@ Please analyze this voice memo and provide:
 
 3. **SUMMARY** - Create a concise 2-3 sentence summary focusing on key insights, questions, or experiences shared.
 
-4. **STANDARDIZED TAGS** - Create tags for these categories (1-3 words each, Title Case, no slashes):
-   - Primary Themes (1-2 main themes): Examples: "Inner Child Work", "Spiritual Practice", "Relationship Boundaries"
-   - Specific Focus (1-2 specific aspects): Examples: "Male Emotional Intelligence", "Sacred Sexuality", "Personal Ceremony"
-   - Content Types (1-2 types): Examples: "Personal Reflection", "Instructional Guidance", "Emotional Processing"
-   - Emotional Tones (1-2 main tones): Examples: "Contemplative", "Vulnerable", "Nurturing", "Triggered"
-   - Key Topics (3-6 specific topics): Examples: "Physical Touch", "Inner Peace", "Spiritual Journey"
+4. **TAGS** - Create 5-10 relevant tags (1-3 words each, Title Case, no slashes) that best describe this voice memo. Choose the most important and descriptive tags covering themes, focus areas, content types, emotional tones, and key topics. Examples: "Inner Child Work", "Spiritual Practice", "Personal Reflection", "Contemplative", "Vulnerable", "Physical Touch", "Inner Peace", "Relationship Boundaries"
 
 5. **DELETION ANALYSIS** - Determine if this should be flagged for deletion based on these criteria:
    
@@ -120,11 +106,7 @@ PROCESSED_CONTENT:
 
 SUMMARY: [2-3 sentence summary here]
 
-PRIMARY_THEMES: [tag1, tag2]
-SPECIFIC_FOCUS: [tag1, tag2] 
-CONTENT_TYPES: [tag1, tag2]
-EMOTIONAL_TONES: [tag1, tag2]
-KEY_TOPICS: [tag1, tag2, tag3, tag4, tag5, tag6]
+TAGS: [tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8]
 
 DELETION_FLAG: [true/false]
 DELETION_CONFIDENCE: [high/medium/low]
@@ -150,7 +132,7 @@ Please analyze this content and provide:
 
 3. **SUMMARY** - Create a concise 2-3 sentence summary.
 
-4. **STANDARDIZED TAGS** - Create appropriate tags based on the content type you identify.
+4. **TAGS** - Create 5-10 relevant tags (1-3 words each, Title Case, no slashes) that best describe this content. Choose the most important and descriptive tags covering themes, focus areas, content types, emotional tones, and key topics.
 
 5. **DELETION ANALYSIS** - Apply appropriate criteria based on content type.
 
@@ -163,11 +145,7 @@ PROCESSED_CONTENT:
 
 SUMMARY: [2-3 sentence summary here]
 
-PRIMARY_THEMES: [tag1, tag2]
-SPECIFIC_FOCUS: [tag1, tag2] 
-CONTENT_TYPES: [tag1, tag2]
-EMOTIONAL_TONES: [tag1, tag2]
-KEY_TOPICS: [tag1, tag2, tag3, tag4, tag5, tag6]
+TAGS: [tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8]
 
 DELETION_FLAG: [true/false]
 DELETION_CONFIDENCE: [high/medium/low]

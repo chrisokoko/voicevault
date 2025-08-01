@@ -51,7 +51,12 @@ class Phase3BucketAssigner:
         
         # Initialize services
         self.claude_service = ClaudeService(taxonomy_file=taxonomy_file)
-        self.notion_service = NotionService()
+        from config.config import DATABASE_ID
+        if not DATABASE_ID:
+            logger.error("DATABASE_ID not configured in config.py. Please set a valid database ID.")
+            sys.exit(1)
+        
+        self.notion_service = NotionService(DATABASE_ID)
         
         # Performance tracking
         self.session_stats = {
@@ -126,30 +131,10 @@ class Phase3BucketAssigner:
                 # Get freeform tags
                 tags = {}
                 
-                # Primary Themes
-                primary_themes = properties.get('Primary Themes', {}).get('multi_select', [])
-                if primary_themes:
-                    tags['primary_themes'] = ', '.join([tag['name'] for tag in primary_themes])
-                
-                # Specific Focus
-                specific_focus = properties.get('Specific Focus', {}).get('multi_select', [])
-                if specific_focus:
-                    tags['specific_focus'] = ', '.join([tag['name'] for tag in specific_focus])
-                
-                # Content Types
-                content_types = properties.get('Content Types', {}).get('multi_select', [])
-                if content_types:
-                    tags['content_types'] = ', '.join([tag['name'] for tag in content_types])
-                
-                # Emotional Tones
-                emotional_tones = properties.get('Emotional Tones', {}).get('multi_select', [])
-                if emotional_tones:
-                    tags['emotional_tones'] = ', '.join([tag['name'] for tag in emotional_tones])
-                
-                # Key Topics
-                key_topics = properties.get('Key Topics', {}).get('multi_select', [])
-                if key_topics:
-                    tags['key_topics'] = ', '.join([tag['name'] for tag in key_topics])
+                # Tags (consolidated field)
+                tags_field = properties.get('Tags', {}).get('rich_text', [])
+                if tags_field and len(tags_field) > 0:
+                    tags['tags'] = tags_field[0].get('text', {}).get('content', '')
                 
                 # Only include pages that have some tags and don't already have bucket assignments
                 life_domain_assigned = properties.get('Life Domain', {}).get('select')

@@ -1,0 +1,63 @@
+{
+  "title": "Voice Memos",
+  "properties": {
+    "Title": {
+      "title": {}
+    },
+    "Tags": {
+      "rich_text": {}
+    },
+    "Summary": {
+      "rich_text": {}
+    },
+    "Duration": {
+      "rich_text": {}
+    },
+    "Duration (Seconds)": {
+      "number": {}
+    },
+    "File Created": {
+      "date": {}
+    },
+    "File Size": {
+      "rich_text": {}
+    },
+    "Audio File": {
+      "files": {}
+    },
+    "Flagged for Deletion": {
+      "checkbox": {}
+    },
+    "Deletion Confidence": {
+      "select": {
+        "options": [
+          {"name": "High", "color": "red"},
+          {"name": "Medium", "color": "yellow"},
+          {"name": "Low", "color": "green"}
+        ]
+      }
+    },
+    "Deletion Reason": {
+      "rich_text": {}
+    },
+    "Audio Content Type": {
+      "select": {
+        "options": [
+          {"name": "Music", "color": "blue"},
+          {"name": "Speech", "color": "green"},
+          {"name": "Unknown", "color": "gray"}
+        ]
+      }
+    },
+    "Life Area": {
+      "multi_select": {
+        "options": []
+      }
+    },
+    "Topic": {
+      "multi_select": {
+        "options": []
+      }
+    }
+  }
+}

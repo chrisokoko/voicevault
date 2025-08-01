@@ -52,35 +52,30 @@ def test_fresh_database():
             temp_file.write(b'test audio data')
             temp_path = temp_file.name
         
-        # Test all multi-select fields that were failing before
+        # Test consolidated tags approach
         test_cases = [
             {
-                "name": "All Fields Together (Original Problem)",
+                "name": "Comprehensive Business Tags",
                 "claude_tags": {
-                    'primary_themes': 'Business Systems, Client Management',
-                    'specific_focus': 'Pipeline Design, Lead Management',
-                    'content_types': 'Process Planning, Strategic Thinking',
-                    'emotional_tones': 'Analytical, Methodical',
-                    'key_topics': 'CRM System, Sales Pipeline, Lead Tracking'
+                    'tags': 'Business Systems, Client Management, Pipeline Design, Process Planning, Strategic Thinking, Analytical, CRM System, Sales Pipeline'
                 }
             },
             {
-                "name": "Just Failing Fields",
+                "name": "Focused Business Tags",
                 "claude_tags": {
-                    'specific_focus': 'Pipeline Design, Lead Management',
-                    'key_topics': 'CRM System, Sales Pipeline, Lead Tracking'
+                    'tags': 'Pipeline Design, Lead Management, CRM System, Sales Pipeline'
                 }
             },
             {
-                "name": "Single Specific Focus",
+                "name": "Simple Business Tags",
                 "claude_tags": {
-                    'specific_focus': 'Pipeline Design'
+                    'tags': 'Pipeline Design, Business Planning, CRM'
                 }
             },
             {
-                "name": "Single Key Topics",
+                "name": "Minimal Tags",
                 "claude_tags": {
-                    'key_topics': 'CRM System'
+                    'tags': 'CRM System, Business'
                 }
             }
         ]
@@ -114,31 +109,13 @@ def test_fresh_database():
                         page_data = fresh_notion.get_page(page_id)
                         properties = page_data.get('properties', {})
                         
-                        verification_results = []
-                        for field_key, field_value in claude_tags.items():
-                            # Map claude keys to notion property names
-                            field_mapping = {
-                                'primary_themes': 'Primary Themes',
-                                'specific_focus': 'Specific Focus',
-                                'content_types': 'Content Types', 
-                                'emotional_tones': 'Emotional Tones',
-                                'key_topics': 'Key Topics'
-                            }
-                            
-                            notion_field_name = field_mapping.get(field_key)
-                            if notion_field_name and notion_field_name in properties:
-                                field_data = properties[notion_field_name]
-                                if 'multi_select' in field_data:
-                                    values = field_data['multi_select']
-                                    value_names = [v.get('name', '') for v in values]
-                                    verification_results.append(f"{notion_field_name}: {value_names}")
-                                else:
-                                    verification_results.append(f"{notion_field_name}: NOT MULTI_SELECT")
-                            else:
-                                verification_results.append(f"{notion_field_name}: NOT FOUND")
-                        
-                        for result in verification_results:
-                            print(f"      • {result}")
+                        # Verify Tags field (now rich_text)
+                        tags_field = properties.get('Tags', {}).get('rich_text', [])
+                        if tags_field and len(tags_field) > 0:
+                            tags_content = tags_field[0].get('text', {}).get('content', '')
+                            print(f"      • Tags: {tags_content}")
+                        else:
+                            print(f"      • Tags: NOT FOUND OR EMPTY")
                         
                     except Exception as verify_error:
                         print(f"   ⚠️  Could not verify fields: {verify_error}")
