@@ -186,7 +186,8 @@ class ClaudeService:
                 "formatted_transcript": transcript,
                 "summary": "",
                 "claude_tags": {
-                    "tags": ""
+                    "tags": "",
+                    "keywords": ""
                 },
                 "deletion_analysis": {
                     'should_delete': False,
@@ -202,7 +203,8 @@ class ClaudeService:
             "formatted_transcript": "",
             "summary": "",
             "claude_tags": {
-                "tags": ""
+                "tags": "",
+                "keywords": ""
             },
             "deletion_analysis": {
                 'should_delete': False,
@@ -228,6 +230,8 @@ class ClaudeService:
                 result["summary"] = line_stripped.replace("SUMMARY:", "").strip()
             elif line_stripped.startswith("TAGS:"):
                 result["claude_tags"]["tags"] = line_stripped.replace("TAGS:", "").strip()
+            elif line_stripped.startswith("KEYWORDS:"):
+                result["claude_tags"]["keywords"] = line_stripped.replace("KEYWORDS:", "").strip()
             elif line_stripped.startswith("DELETION_FLAG:"):
                 flag_value = line_stripped.replace("DELETION_FLAG:", "").strip().lower()
                 result["deletion_analysis"]["should_delete"] = flag_value == 'true'
@@ -671,55 +675,73 @@ Use comma-separated values on single lines. Do not use bullet points or multiple
                                      available_life_domains: List[str], 
                                      available_focus_areas: List[str], 
                                      batch_number: int) -> str:
-        """Build prompt for batch bucket assignment"""
+        """Build prompt for batch bucket assignment using new format"""
+        import json
         
-        domains_text = "\n".join([f"- {domain}" for domain in available_life_domains])
-        areas_text = "\n".join([f"- {area}" for area in available_focus_areas])
+        # Format life domains and topics as JSON arrays
+        life_areas_json = json.dumps(available_life_domains, indent=2)
+        topics_json = json.dumps(available_focus_areas, indent=2)
         
-        batch_prompt = f"""# VOICE MEMO BATCH {batch_number} BUCKET ASSIGNMENT
+        batch_prompt = f"""You are classifying voice notes to make them easily searchable by humans. Assign two fields to each note: life_areas and topics. Use the predefined options below.
 
-Please assign each voice memo to ALL relevant Life Domains and Focus Areas that resonate with the content based on their tags.
+You may select multiple tags for each field, but only if it improves searchability.
 
-**IMPORTANT:** A voice memo can belong to MULTIPLE life domains and MULTIPLE focus areas. Assign ALL that are relevant, not just the top one.
+Input: A summary and comma-separated list of general classification tags for each voice memo.
+Output: A JSON in this exact format:
 
-**AVAILABLE LIFE DOMAINS:**
-{domains_text}
+life_areas = [a, b, c]
+topics = [a, b, c]
 
-**AVAILABLE FOCUS AREAS:**
-{areas_text}
+Available Life Areas:
+{life_areas_json}
 
-**VOICE MEMOS TO CLASSIFY:**
+Available Topics:
+{topics_json}
+
+Voice Memos To Classify:
 
 """
         
         for i, page in enumerate(batch_pages, 1):
             title = page.get('title', 'Untitled')
             tags = page.get('tags', {})
+            summary = page.get('summary', '')
             
-            # Format tags for display
-            tag_display = []
+            # Extract comma-separated tags
+            tags_list = []
             for category, tag_values in tags.items():
                 if tag_values and category != 'brief_summary':
-                    tag_display.append(f"{category}: {tag_values}")
-            tags_text = "; ".join(tag_display) if tag_display else "No tags"
+                    # Parse comma-separated tags
+                    parsed_tags = [tag.strip() for tag in str(tag_values).split(',') if tag.strip()]
+                    tags_list.extend(parsed_tags)
             
-            batch_prompt += f"**Memo {i}:**\n"
-            batch_prompt += f"Title: \"{title}\"\n"
-            batch_prompt += f"Tags: {tags_text}\n\n"
+            tags_text = ", ".join(tags_list) if tags_list else "No tags available"
+            summary_text = summary if summary else "No summary available"
+            
+            batch_prompt += f"""**Voice Memo {i}:**
+Title: "{title}"
+Summary: {summary_text}
+General Classification Tags: {tags_text}
 
-        batch_prompt += """Return JSON with exact domain and area names. Assign ALL relevant categories using arrays:
+"""
+
+        batch_prompt += """Return JSON with this exact format for each memo (numbered 1, 2, 3...):
 
 {
-  "1": {"life_domains": ["domain1", "domain2"], "focus_areas": ["area1", "area2", "area3"]},
-  "2": {"life_domains": ["domain1"], "focus_areas": ["area1", "area2"]},
-  ...
+  "1": {
+    "life_areas": ["Life Area 1", "Life Area 2"],
+    "topics": ["Topic 1", "Topic 2", "Topic 3"]
+  },
+  "2": {
+    "life_areas": ["Life Area 1"],
+    "topics": ["Topic 1", "Topic 2"]
+  }
 }
 
 **IMPORTANT:** 
-- Use arrays even for single values: {"life_domains": ["domain1"], "focus_areas": ["area1"]}
-- Assign ALL relevant categories that resonate with the content
-- Use only the exact names from the lists above
-- A memo can have multiple life domains AND multiple focus areas"""
+- Use only the exact names from the Available Life Areas and Available Topics lists above
+- Select multiple options only if it improves searchability
+- Use arrays even for single values"""
 
         return batch_prompt
 

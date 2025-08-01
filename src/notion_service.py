@@ -210,8 +210,9 @@ class NotionService:
             # Extract audio metadata
             metadata = self.extract_audio_metadata(audio_file_path)
             
-            # Get consolidated tags as comma-separated string
+            # Get consolidated tags and keywords as comma-separated strings
             tags_string = claude_tags.get('tags', '')
+            keywords_string = claude_tags.get('keywords', '')
             
             # Prepare properties for the Notion page
             properties = {
@@ -233,6 +234,15 @@ class NotionService:
                         }
                     ]
                 } if tags_string else None,
+                "Keywords": {
+                    "rich_text": [
+                        {
+                            "text": {
+                                "content": keywords_string
+                            }
+                        }
+                    ]
+                } if keywords_string else None,
                 "Summary": {
                     "rich_text": [
                         {

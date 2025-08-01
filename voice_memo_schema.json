@@ -58,6 +58,9 @@
       "multi_select": {
         "options": []
       }
+    },
+    "Keywords": {
+      "rich_text": {}
     }
   }
 }

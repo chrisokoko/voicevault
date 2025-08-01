@@ -1,170 +1,32 @@
 {
-  "created_at": "2025-07-29T22:12:21.235149",
-  "created_by": "Phase 2 - Create Classification Buckets",
-  "taxonomy_structure": {
-    "life_domains": {
-      "Personal Development": {
-        "description": "",
-        "included": true
-      },
-      "Relationships": {
-        "description": "",
-        "included": true
-      },
-      "Work & Career": {
-        "description": "",
-        "included": true
-      },
-      "Life Management": {
-        "description": "",
-        "included": true
-      },
-      "Health & Wellbeing": {
-        "description": "",
-        "included": true
-      },
-      "Creativity & Expression": {
-        "description": "",
-        "included": true
-      },
-      "Spirituality & Meaning": {
-        "description": "",
-        "included": true
-      }
-    },
-    "focus_areas": {
-      "Self-Reflection": {
-        "parent_life_domain": "🧠 Personal Development",
-        "description": "Focus area under 🧠 Personal Development",
-        "included": true
-      },
-      "Mindset & Psychology": {
-        "parent_life_domain": "🧠 Personal Development",
-        "description": "Focus area under 🧠 Personal Development",
-        "included": true
-      },
-      "Romantic/Partnership": {
-        "parent_life_domain": "💕 Relationships",
-        "description": "Focus area under 💕 Relationships",
-        "included": true
-      },
-      "Community": {
-        "parent_life_domain": "💕 Relationships",
-        "description": "Focus area under 💕 Relationships",
-        "included": true
-      },
-      "Business Operations": {
-        "parent_life_domain": "💼 Work & Career",
-        "description": "Focus area under 💼 Work & Career",
-        "included": true
-      },
-      "Professional Growth": {
-        "parent_life_domain": "💼 Work & Career",
-        "description": "Focus area under 💼 Work & Career",
-        "included": true
-      },
-      "Home & Living": {
-        "parent_life_domain": "🏠 Life Management",
-        "description": "Focus area under 🏠 Life Management",
-        "included": true
-      },
-      "Mental Health": {
-        "parent_life_domain": "🌱 Health & Wellbeing",
-        "description": "Focus area under 🌱 Health & Wellbeing",
-        "included": true
-      },
-      "Emotional Processing": {
-        "parent_life_domain": "🌱 Health & Wellbeing",
-        "description": "Focus area under 🌱 Health & Wellbeing",
-        "included": true
-      },
-      "Self-Care": {
-        "parent_life_domain": "🌱 Health & Wellbeing",
-        "description": "Focus area under 🌱 Health & Wellbeing",
-        "included": true
-      },
-      "Artistic Creation": {
-        "parent_life_domain": "🎨 Creativity & Expression",
-        "description": "Focus area under 🎨 Creativity & Expression",
-        "included": true
-      },
-      "Personal Spirituality": {
-        "parent_life_domain": "🕊️ Spirituality & Meaning",
-        "description": "Focus area under 🕊️ Spirituality & Meaning",
-        "included": true
-      },
-      "Life Purpose": {
-        "parent_life_domain": "🕊️ Spirituality & Meaning",
-        "description": "Focus area under 🕊️ Spirituality & Meaning",
-        "included": true
-      },
-      "Sacred Practice & Ritual": {
-        "parent_life_domain": null,
-        "description": "Custom focus area",
-        "included": true
-      },
-      "Alternative Medicine & Healing": {
-        "parent_life_domain": null,
-        "description": "Custom focus area",
-        "included": true
-      },
-      "Digital Technology & AI": {
-        "parent_life_domain": null,
-        "description": "Custom focus area",
-        "included": true
-      },
-      "Marketing & Growth": {
-        "parent_life_domain": null,
-        "description": "Custom focus area",
-        "included": true
-      },
-      "Community Building & Leadership": {
-        "parent_life_domain": null,
-        "description": "Custom focus area",
-        "included": true
-      },
-      "Transformational Experiences": {
-        "parent_life_domain": null,
-        "description": "Custom focus area",
-        "included": true
-      }
-    }
-  },
-  "classification_buckets": {
-    "life_domains": [
-      "Personal Development",
-      "Relationships",
-      "Work & Career",
-      "Life Management",
-      "Health & Wellbeing",
-      "Creativity & Expression",
-      "Spirituality & Meaning"
-    ],
-    "focus_areas": [
-      "Self-Reflection",
-      "Mindset & Psychology",
-      "Romantic/Partnership",
-      "Community",
-      "Business Operations",
-      "Professional Growth",
-      "Home & Living",
-      "Mental Health",
-      "Emotional Processing",
-      "Self-Care",
-      "Artistic Creation",
-      "Personal Spirituality",
-      "Life Purpose",
-      "Sacred Practice & Ritual",
-      "Alternative Medicine & Healing",
-      "Digital Technology & AI",
-      "Marketing & Growth",
-      "Community Building & Leadership",
-      "Transformational Experiences"
-    ]
-  },
-  "meta": {
-    "total_life_domains": 7,
-    "total_focus_areas": 19,
-    "taxonomy_version": "1.0"
-  }
+  "life_areas": [
+    "Personal Development",
+    "Relationships",
+    "Work & Career",
+    "Life Management",
+    "Health & Wellbeing",
+    "Creativity & Expression",
+    "Spirituality & Meaning"
+  ],
+  "topics": [
+    "Self-Reflection",
+    "Mindset & Psychology",
+    "Romantic/Partnership",
+    "Community",
+    "Business Operations",
+    "Professional Growth",
+    "Home & Living",
+    "Mental Health",
+    "Emotional Processing",
+    "Self-Care",
+    "Artistic Creation",
+    "Personal Spirituality",
+    "Life Purpose",
+    "Sacred Practice & Ritual",
+    "Alternative Medicine & Healing",
+    "Digital Technology & AI",
+    "Marketing & Growth",
+    "Community Building & Leadership",
+    "Transformational Experiences"
+  ]
 }

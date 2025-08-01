@@ -33,11 +33,13 @@ Please analyze this creative content and provide:
    - If the transcript has some recognizable lyrics/words: Provide those lyrics cleaned up, noting "Partial lyrics from music file:"
    - If completely unclear: "No transcript available - this is an instrumental music file"
 
-3. **SUMMARY** - Create a 2-3 sentence summary describing this as a creative/musical recording, mentioning any identifiable musical elements or themes.
+3. **SUMMARY** - Create a concise 2-3 sentence summary that a human could read in 7s or less to understand the content (content_type, content_purpose, content_tone, audience, and key_insights). Write it in short hand so that's it's easy to read quickly.
 
-4. **TAGS** - Create 5-10 relevant tags (1-3 words each) that best describe this creative content. Choose the most important and descriptive tags from themes, focus areas, content types, emotional tones, and key topics. Examples: "Musical Creation", "Creative Expression", "Instrumental Music", "Artistic Practice", "Musical Exploration"
+4. **TAGS** - Create up to 20 relevant tags (1-3 words each, Title Case, no slashes) that best describe this voice memo. Choose the most important and descriptive tags covering themes, focus areas, content types, emotional tones, and key topics. Ensure that all people, places, companies, location, and other important details are included as tags.
 
-5. **DELETION ANALYSIS** - For creative content:
+5. **KEYWORDS** - Extract a concise list of the most important named entities and symbolic figures that someone might search for later. Extract only: People's names, Organizations/companies/institutions, Cities or specific places, Symbolic figures/metaphors/archetypes (e.g., "lion," "chief," "fire," "mother wound"), Named events or rituals (e.g., "wedding," "Solstice," "interview," "brothers' circle"). Do not include: Emotional states, common actions, relationship terms, or general experiences. Output a flat comma-separated list (Up to 8 terms max).
+
+6. **DELETION ANALYSIS** - For creative content:
    - KEEP all music/creative recordings unless they are clearly test recordings or accidental captures
    - Creative expression is valuable and should be preserved
 
@@ -45,12 +47,14 @@ Please analyze this creative content and provide:
 
 TITLE: [compelling title here]
 
-PROCESSED_CONTENT:
+FORMATTED TRANSCRIPT:
 [appropriate content based on transcript quality - see instructions above]
 
 SUMMARY: [2-3 sentence summary here]
 
 TAGS: [tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8]
+
+KEYWORDS: [keyword1, keyword2, keyword3, keyword4, keyword5]
 
 DELETION_FLAG: [true/false]
 DELETION_CONFIDENCE: [high/medium/low]
@@ -75,13 +79,15 @@ Please analyze this voice memo and provide:
 
 1. **TITLE** - Create a specific, compelling title (3-8 words) that captures the essence of the content. If the filename contains meaningful information, incorporate and improve it. Use proper Title Case capitalization.
 
-2. **PROCESSED_CONTENT** - ALWAYS provide the improved transcript regardless of deletion analysis. Improve readability by fixing grammar, typos, and formatting while preserving ALL original ideas, words, and meaning. Add appropriate punctuation, capitalization, and paragraph breaks. Keep the speaker's authentic voice. This should be the complete, formatted version of their spoken words.
+2. **FORMATTED TRANSCRIPT** - Take the transcript and improve readability by fixing grammar, typos, and format for easy human readability (appropriate punctuation, capitalization, and paragraph breaks).  
 
-3. **SUMMARY** - Create a concise 2-3 sentence summary focusing on key insights, questions, or experiences shared.
+3. **SUMMARY** - Create a concise 2-3 sentence summary that a human could read in 7s or less to understand the content (content_type, content_purpose, content_tone, audience, and key_insights). Write it in short hand so that's it's easy to read quickly.
 
-4. **TAGS** - Create 5-10 relevant tags (1-3 words each, Title Case, no slashes) that best describe this voice memo. Choose the most important and descriptive tags covering themes, focus areas, content types, emotional tones, and key topics. Examples: "Inner Child Work", "Spiritual Practice", "Personal Reflection", "Contemplative", "Vulnerable", "Physical Touch", "Inner Peace", "Relationship Boundaries"
+4. **TAGS** - Create up to 20 relevant tags (1-3 words each, Title Case, no slashes) that best describe this voice memo. Choose the most important and descriptive tags covering themes, focus areas, content types, emotional tones, and key topics. Ensure that all people, places, companies, location, and other important details are included as tags.
 
-5. **DELETION ANALYSIS** - Determine if this should be flagged for deletion based on these criteria:
+5. **KEYWORDS** - Extract a concise list of the most important named entities and symbolic figures that someone might search for later. Extract only: People's names, Organizations/companies/institutions, Cities or specific places, Symbolic figures/metaphors/archetypes (e.g., "lion," "chief," "fire," "mother wound"), Named events or rituals (e.g., "wedding," "Solstice," "interview," "brothers' circle"). Do not include: Emotional states, common actions, relationship terms, or general experiences. Output a flat comma-separated list (Up to 8 terms max).
+
+6. **DELETION ANALYSIS** - Determine if this should be flagged for deletion based on these criteria:
    
    FLAG FOR DELETION if content appears to be:
    - Content recorded for someone else (profile responses, team communications, role explanations)
@@ -108,12 +114,14 @@ SUMMARY: [2-3 sentence summary here]
 
 TAGS: [tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8]
 
+KEYWORDS: [keyword1, keyword2, keyword3, keyword4, keyword5]
+
 DELETION_FLAG: [true/false]
 DELETION_CONFIDENCE: [high/medium/low]
 DELETION_REASON: [brief explanation]""")
 
     # Fallback prompt for unknown/unclassified audio
-    UNKNOWN_ANALYSIS_PROMPT = Template("""Analyze this voice memo transcript. The audio classification was uncertain, so please analyze the content to determine the appropriate processing approach.
+    UNKNOWN_ANALYSIS_PROMPT = Template("""Analyze this voice memo transcript. The audio classification was uncertain.
 
 **ORIGINAL TRANSCRIPT:**
 "${transcript}"
@@ -130,11 +138,13 @@ Please analyze this content and provide:
 
 2. **PROCESSED_CONTENT** - Improve readability by fixing grammar, typos, and formatting while preserving ALL original ideas, words, and meaning. If the content appears to be garbled music, note that appropriately.
 
-3. **SUMMARY** - Create a concise 2-3 sentence summary.
+3. **SUMMARY** - Create a concise 2-3 sentence summary that a human could read in 7s or less to understand the content (content_type, content_purpose, content_tone, audience, and key_insights). Write it in short hand so that's it's easy to read quickly.
 
-4. **TAGS** - Create 5-10 relevant tags (1-3 words each, Title Case, no slashes) that best describe this content. Choose the most important and descriptive tags covering themes, focus areas, content types, emotional tones, and key topics.
+4. **TAGS** - Create up to 20 relevant tags (1-3 words each, Title Case, no slashes) that best describe this voice memo. Choose the most important and descriptive tags covering themes, focus areas, content types, emotional tones, and key topics. Ensure that all people, places, companies, location, and other important details are included as tags.
 
-5. **DELETION ANALYSIS** - Apply appropriate criteria based on content type.
+5. **KEYWORDS** - Extract a concise list of the most important named entities and symbolic figures that someone might search for later. Extract only: People's names, Organizations/companies/institutions, Cities or specific places, Symbolic figures/metaphors/archetypes (e.g., "lion," "chief," "fire," "mother wound"), Named events or rituals (e.g., "wedding," "Solstice," "interview," "brothers' circle"). Do not include: Emotional states, common actions, relationship terms, or general experiences. Output a flat comma-separated list (Up to 8 terms max).
+
+6. **DELETION ANALYSIS** - Apply appropriate criteria based on content type.
 
 **FORMAT YOUR RESPONSE EXACTLY AS:**
 
@@ -146,6 +156,8 @@ PROCESSED_CONTENT:
 SUMMARY: [2-3 sentence summary here]
 
 TAGS: [tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8]
+
+KEYWORDS: [keyword1, keyword2, keyword3, keyword4, keyword5]
 
 DELETION_FLAG: [true/false]
 DELETION_CONFIDENCE: [high/medium/low]

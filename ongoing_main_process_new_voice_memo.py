@@ -109,10 +109,9 @@ class OngoingVoiceMemoProcessor:
             with open(taxonomy_file, 'r') as f:
                 self.taxonomy_data = json.load(f)
             
-            # Extract available domains and areas
-            classification_buckets = self.taxonomy_data.get('classification_buckets', {})
-            self.available_life_domains = classification_buckets.get('life_domains', [])
-            self.available_focus_areas = classification_buckets.get('focus_areas', [])
+            # Extract available domains and areas from new format
+            self.available_life_domains = self.taxonomy_data.get('life_areas', [])
+            self.available_focus_areas = self.taxonomy_data.get('topics', [])
             
             logger.info(f"📥 Loaded taxonomy: {len(self.available_life_domains)} life domains, {len(self.available_focus_areas)} focus areas")
             return True
@@ -121,7 +120,7 @@ class OngoingVoiceMemoProcessor:
             logger.error(f"Error loading taxonomy file: {e}")
             return False
 
-    def assign_bucket_tags(self, title: str, claude_tags: Dict[str, str]) -> Dict[str, str]:
+    def assign_bucket_tags(self, title: str, claude_tags: Dict[str, str], summary: str = "") -> Dict[str, str]:
         """Assign bucket tags to a single voice memo"""
         if not self.taxonomy_data:
             return {'life_domain': None, 'focus_area': None}
@@ -130,7 +129,8 @@ class OngoingVoiceMemoProcessor:
             # Create a single-item batch for Claude processing
             batch_pages = [{
                 'title': title,
-                'tags': claude_tags
+                'tags': claude_tags,
+                'summary': summary
             }]
             
             # Use Claude service to assign bucket tags
@@ -144,8 +144,8 @@ class OngoingVoiceMemoProcessor:
             if result['success'] and '1' in result['classifications']:
                 classification = result['classifications']['1']
                 return {
-                    'life_domains': classification.get('life_domains', []),
-                    'focus_areas': classification.get('focus_areas', [])
+                    'life_domains': classification.get('life_areas', []),  # Updated field name
+                    'focus_areas': classification.get('topics', [])        # Updated field name
                 }
             else:
                 logger.warning("Failed to assign bucket tags")
@@ -235,7 +235,7 @@ class OngoingVoiceMemoProcessor:
             bucket_assignment = {'life_domains': [], 'focus_areas': []}
             if self.taxonomy_data:
                 logger.info("🏷️ Assigning bucket tags...")
-                bucket_assignment = self.assign_bucket_tags(title, claude_tags)
+                bucket_assignment = self.assign_bucket_tags(title, claude_tags, summary)
                 if bucket_assignment['life_domains'] or bucket_assignment['focus_areas']:
                     life_domains_str = ", ".join(bucket_assignment['life_domains']) if bucket_assignment['life_domains'] else "None"
                     focus_areas_str = ", ".join(bucket_assignment['focus_areas']) if bucket_assignment['focus_areas'] else "None"
