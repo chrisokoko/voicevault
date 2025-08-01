@@ -9,6 +9,7 @@ import logging
 from typing import Dict, List, Optional, Any
 from anthropic import Anthropic
 from config.config import CLAUDE_API_KEY
+from config.prompts import get_analysis_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -153,74 +154,13 @@ class ClaudeService:
     def process_transcript_complete(self, transcript: str, filename: str = '', audio_type: str = None, audio_classification: Dict = None) -> Dict[str, Any]:
         """Single comprehensive Claude API call to get everything we need from a transcript"""
         try:
-            # Build audio context information
-            audio_context = ""
-            if audio_type and audio_classification:
-                audio_context = f"""
-**AUDIO CLASSIFICATION:**
-- Content Type: {audio_type}
-- Confidence: {audio_classification.get('confidence', 0.0):.3f}
-- Top Predictions: {', '.join([pred[0] for pred in audio_classification.get('top_yamnet_predictions', [])[:3]])}
-
-**IMPORTANT CONTEXT:** This audio was classified as "{audio_type}". 
-- If this is music/singing and the transcript is garbled, repetitive numbers, or nonsensical, please note that this is likely a musical recording without clear lyrics.
-- If the transcript doesn't make sense for the detected audio type, mention this in your analysis.
-"""
-
-            prompt = f"""Analyze this voice memo transcript and provide a comprehensive analysis. Please provide ALL of the following in your response:
-
-**TRANSCRIPT:**
-"{transcript}"
-
-**FILENAME:** {filename}
-{audio_context}
-Please analyze this voice memo and provide:
-
-1. **TITLE** - Create a specific, compelling title (3-8 words) that captures the essence of the content. Use proper Title Case capitalization.
-
-2. **FORMATTED TRANSCRIPT** - Improve readability by fixing grammar, typos, and formatting while preserving ALL original ideas, words, and meaning. Add appropriate punctuation, capitalization, and paragraph breaks. Keep the speaker's authentic voice.
-
-3. **SUMMARY** - Create a concise 2-3 sentence summary focusing on key insights, questions, or experiences shared.
-
-4. **STANDARDIZED TAGS** - Create tags for these categories (1-3 words each, Title Case, no slashes):
-   - Primary Themes (1-2 main themes): Examples: "Inner Child Work", "Spiritual Practice", "Relationship Boundaries"
-   - Specific Focus (1-2 specific aspects): Examples: "Male Emotional Intelligence", "Sacred Sexuality", "Personal Ceremony"
-   - Content Types (1-2 types): Examples: "Personal Reflection", "Instructional Guidance", "Emotional Processing"
-   - Emotional Tones (1-2 main tones): Examples: "Contemplative", "Vulnerable", "Nurturing", "Triggered"
-   - Key Topics (3-6 specific topics): Examples: "Physical Touch", "Inner Peace", "Spiritual Journey"
-
-5. **DELETION ANALYSIS** - Determine if this should be flagged for deletion based on these criteria:
-   
-   FLAG FOR DELETION if content appears to be:
-   - Content recorded for someone else (profile responses, team communications, role explanations)
-   - Addressing others directly ("Hey team", explanation mode for external audience)
-   - Draft/recording for other platforms (preparation for emails, messages, posts)
-   
-   KEEP if content is:
-   - Personal reflections, insights, spiritual/emotional processing
-   - Inner dialogue or self-compassion work
-   - Contemplative thoughts without clear external audience
-   - Creative ideas, vision work, meaningful experiences
-   - First-person introspective processing
-
-**FORMAT YOUR RESPONSE EXACTLY AS:**
-
-TITLE: [compelling title here]
-
-FORMATTED_TRANSCRIPT:
-[improved transcript here - just the formatted text, no additional commentary]
-
-SUMMARY: [2-3 sentence summary here]
-
-PRIMARY_THEMES: [tag1, tag2]
-SPECIFIC_FOCUS: [tag1, tag2] 
-CONTENT_TYPES: [tag1, tag2]
-EMOTIONAL_TONES: [tag1, tag2]
-KEY_TOPICS: [tag1, tag2, tag3, tag4, tag5, tag6]
-
-DELETION_FLAG: [true/false]
-DELETION_CONFIDENCE: [high/medium/low]
-DELETION_REASON: [brief explanation]"""
+            # Get the appropriate prompt template based on audio type
+            prompt = get_analysis_prompt(
+                audio_type=audio_type or 'Unknown',
+                transcript=transcript,
+                filename=filename,
+                audio_classification=audio_classification
+            )
             
             response = self.client.messages.create(
                 model="claude-3-5-sonnet-20241022",
@@ -281,15 +221,15 @@ DELETION_REASON: [brief explanation]"""
         
         lines = response_text.strip().split('\n')
         current_section = None
-        formatted_transcript_lines = []
+        processed_content_lines = []
         
         for line in lines:
             line_stripped = line.strip()
             
             if line_stripped.startswith("TITLE:"):
                 result["title"] = line_stripped.replace("TITLE:", "").strip()
-            elif line_stripped.startswith("FORMATTED_TRANSCRIPT:"):
-                current_section = "formatted_transcript"
+            elif line_stripped.startswith("PROCESSED_CONTENT:"):
+                current_section = "processed_content"
                 continue
             elif line_stripped.startswith("SUMMARY:"):
                 current_section = None
@@ -311,13 +251,13 @@ DELETION_REASON: [brief explanation]"""
                 result["deletion_analysis"]["confidence"] = line_stripped.replace("DELETION_CONFIDENCE:", "").strip().lower()
             elif line_stripped.startswith("DELETION_REASON:"):
                 result["deletion_analysis"]["reason"] = line_stripped.replace("DELETION_REASON:", "").strip()
-            elif current_section == "formatted_transcript":
-                # Collect all lines for formatted transcript
-                formatted_transcript_lines.append(line)
+            elif current_section == "processed_content":
+                # Collect all lines for processed content
+                processed_content_lines.append(line)
         
-        # Join formatted transcript lines
-        if formatted_transcript_lines:
-            result["formatted_transcript"] = '\n'.join(formatted_transcript_lines).strip()
+        # Join processed content lines
+        if processed_content_lines:
+            result["formatted_transcript"] = '\n'.join(processed_content_lines).strip()
         
         return result
 

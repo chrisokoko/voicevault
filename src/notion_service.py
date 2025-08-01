@@ -242,6 +242,25 @@ class NotionService:
                 },
                 "Deletion Reason": {
                     "rich_text": {}
+                },
+                "Audio Content Type": {
+                    "select": {
+                        "options": [
+                            {"name": "Music", "color": "blue"},
+                            {"name": "Speech", "color": "green"},
+                            {"name": "Unknown", "color": "gray"}
+                        ]
+                    }
+                },
+                "Life Area": {
+                    "multi_select": {
+                        "options": []
+                    }
+                },
+                "Topic": {
+                    "multi_select": {
+                        "options": []
+                    }
                 }
             }
             
@@ -449,8 +468,11 @@ class NotionService:
             page_id = response["id"]
             logger.info(f"Successfully created Notion page: {page_id}")
             
-            # Add audio file to the page properties
-            self.add_audio_file_to_page(page_id, audio_file_path)
+            # Add audio file to the page properties (only if file exists)
+            if os.path.exists(audio_file_path):
+                self.add_audio_file_to_page(page_id, audio_file_path)
+            else:
+                logger.warning(f"Audio file not found, skipping upload: {audio_file_path}")
             
             return page_id
             
