@@ -17,6 +17,12 @@ from notion_client import Client, AsyncClient
 from notion_client.errors import APIResponseError, RequestTimeoutError
 from config.config import NOTION_TOKEN
 from mutagen import File
+from string import Template
+
+# Markdown templates for toggle content
+REASONING_SUMMARY_TEMPLATE = Template("""**Keep/Delete Reasoning:**
+${decision}
+${reason}""")
 
 logger = logging.getLogger(__name__)
 
@@ -290,27 +296,13 @@ class NotionService:
                 "Flagged for Deletion": {
                     "checkbox": deletion_analysis.get('should_delete', False) if deletion_analysis else False
                 },
-                "Deletion Confidence": {
-                    "select": {
-                        "name": deletion_analysis.get('confidence', 'low').title() if deletion_analysis and deletion_analysis.get('should_delete') else None
-                    }
-                } if deletion_analysis and deletion_analysis.get('should_delete') else None,
-                "Deletion Reason": {
-                    "rich_text": [
-                        {
-                            "text": {
-                                "content": deletion_analysis.get('reason', '') if deletion_analysis else ''
-                            }
-                        }
-                    ]
-                }
             }
             
             # Remove None values
             properties = {k: v for k, v in properties.items() if v is not None}
             
             # Create the page content with formatted transcript
-            children = self._build_page_content(transcript, original_transcript, claude_tags)
+            children = self._build_page_content(transcript, original_transcript, claude_tags, deletion_analysis)
             
             # Create the page
             response = self._make_api_call(
@@ -425,7 +417,7 @@ class NotionService:
             logger.error(f"Error converting markdown to blocks: {e}")
             raise RuntimeError(f"Failed to convert markdown to Notion blocks: {e}")
 
-    def _build_page_content(self, transcript: str, original_transcript: Optional[str], claude_tags: Dict[str, str]) -> List[Dict]:
+    def _build_page_content(self, transcript: str, original_transcript: Optional[str], claude_tags: Dict[str, str], deletion_analysis: Optional[Dict] = None) -> List[Dict]:
         """Build page content blocks with transcript and analysis"""
         children = []
         
@@ -463,20 +455,23 @@ class NotionService:
             }
         })
         
-        # Add divider before original transcript section
+        # Add divider before post-roll section
         children.append({
             "object": "block",
             "type": "divider",
             "divider": {}
         })
         
-        # Add original transcript in a toggle if provided
+        # Create Original Transcript toggle manually
         if original_transcript and original_transcript != transcript:
-            toggle_children = []
-            chunk_size = 2000  # Notion's paragraph limit
-            for i in range(0, len(original_transcript), chunk_size):
-                chunk = original_transcript[i:i + chunk_size]
-                toggle_children.append({
+            # Split original transcript into chunks for Notion's 2000 character limit
+            original_transcript_content = original_transcript
+            chunk_size = 1900  # Leave buffer for Notion's 2000 char limit
+            transcript_chunks = []
+            
+            for i in range(0, len(original_transcript_content), chunk_size):
+                chunk = original_transcript_content[i:i + chunk_size]
+                transcript_chunks.append({
                     "object": "block",
                     "type": "paragraph",
                     "paragraph": {
@@ -503,52 +498,19 @@ class NotionService:
                             }
                         }
                     ],
-                    "children": toggle_children
+                    "children": transcript_chunks
                 }
             })
         
-        # Add Claude analysis in a toggle
-        analysis_children = []
+        # Create Reasoning Summary toggle with markdown content
+        decision = "KEEP" if not deletion_analysis.get('should_delete', False) else "DELETE" if deletion_analysis else "KEEP"
+        reasoning_markdown = REASONING_SUMMARY_TEMPLATE.substitute(
+            decision=decision,
+            reason=deletion_analysis.get('reason', 'No reason provided') if deletion_analysis else 'No analysis available'
+        )
         
-        # Add tags summary if available
-        tags_content = claude_tags.get('tags', 'N/A')
-        if tags_content and tags_content != 'N/A':
-            analysis_children.append({
-                "object": "block",
-                "type": "paragraph",
-                "paragraph": {
-                    "rich_text": [
-                        {
-                            "type": "text",
-                            "text": {
-                                "content": f"Tags: {tags_content}"
-                            },
-                            "annotations": {
-                                "bold": True
-                            }
-                        }
-                    ]
-                }
-            })
-        
-        if claude_tags.get('brief_summary'):
-            analysis_children.append({
-                "object": "block",
-                "type": "paragraph",
-                "paragraph": {
-                    "rich_text": [
-                        {
-                            "type": "text",
-                            "text": {
-                                "content": f"Analysis Summary: {claude_tags['brief_summary']}"
-                            },
-                            "annotations": {
-                                "italic": True
-                            }
-                        }
-                    ]
-                }
-            })
+        # Convert reasoning markdown to blocks for toggle content
+        reasoning_blocks = self._markdown_to_notion_blocks(reasoning_markdown)
         
         children.append({
             "object": "block",
@@ -558,11 +520,11 @@ class NotionService:
                     {
                         "type": "text",
                         "text": {
-                            "content": "Claude Reasoning Summary"
+                            "content": "Reasoning Summary"
                         }
                     }
                 ],
-                "children": analysis_children
+                "children": reasoning_blocks
             }
         })
         

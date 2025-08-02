@@ -9,144 +9,38 @@ from typing import Dict, Any
 class PromptTemplates:
     """Centralized prompt templates with variable substitution"""
     
-    # Music/Creative Content Processing Prompt
-    MUSIC_ANALYSIS_PROMPT = Template("""Analyze this audio file that has been classified as music/creative content. Please provide ALL of the following in your response:
+    # Generic building blocks for reuse across prompts
+    DELETION_ANALYSIS_BLOCK = """**DELETION ANALYSIS** - You are a thoughtful curator helping someone maintain a meaningful personal voice note archive. 
 
-**ORIGINAL TRANSCRIPT:**
-"${transcript}"
+Your job is to evaluate voice note transcripts and recommend whether they should be KEPT or DELETED based on their potential future value.
 
-**FILENAME:** ${filename}
+DELETE a voice note if it contains:
 
-**AUDIO CLASSIFICATION:**
-- Content Type: ${audio_type}
-- Confidence: ${confidence}
-- Top Predictions: ${top_predictions}
+1. Pure logistics: Temporary reminders that are no longer relevant ("pick up milk," "meeting at 3pm")
+2. Technical testing: "Testing 1, 2, 3" or checking if the recording works
+3. Incomplete thoughts: Fragment recordings with no meaningful content or context
+4. Mundane status updates: Routine daily activities with no emotional or intellectual depth
+5. Superseded information: Details that have been updated or replaced by newer information
+6. Purely transactional: Basic coordination that served its immediate purpose ("running 5 minutes late")
+7. Background noise/accidents: Recordings with no intentional content
+8. Repetitive content: Ideas or thoughts already captured more fully in other notes
 
-**IMPORTANT:** This audio was classified as "${audio_type}" with ${confidence} confidence. The transcript above may be garbled, repetitive, or nonsensical because this is a musical recording without clear vocals.
+**For creative/musical content:** KEEP all music/creative recordings unless they are clearly test recordings or accidental captures. Creative expression is valuable and should be preserved.
 
-Please analyze this creative content and provide:
+When in doubt, lean toward KEEPING - future you might find unexpected value in what seems mundane today. Consider the voice note's potential for:
 
-1. **TITLE** - Create a compelling title based on the filename and any discernible content. If the filename has meaningful information, use and improve it. Use proper Title Case capitalization.
-
-2. **PROCESSED CONTENT** - Since this is a music file:
-   - If the transcript is garbled/repetitive (like "24 24 24" or nonsensical patterns): Replace with "No transcript available - this is a music file without clear vocals"
-   - If the transcript has some recognizable lyrics/words: Provide those lyrics cleaned up, noting "Partial lyrics from music file:"
-   - If completely unclear: "No transcript available - this is an instrumental music file"
-
-3. **SUMMARY** - Create a concise 2-3 sentence summary that a human could read in 7s or less to understand the content (content_type, content_purpose, content_tone, audience, and key_insights). Write it in short hand so that's it's easy to read quickly.
-
-4. **TAGS** - Create up to 20 relevant tags (1-3 words each, Title Case, no slashes) that best describe this voice memo. Choose the most important and descriptive tags covering themes, focus areas, content types, emotional tones, and key topics. Ensure that all people, places, companies, location, and other important details are included as tags.
-
-5. **KEYWORDS** - Extract a concise list of the most important named entities and symbolic figures that someone might search for later. Extract only: People's names, Organizations/companies/institutions, Cities or specific places, Symbolic figures/metaphors/archetypes (e.g., "lion," "chief," "fire," "mother wound"), Named events or rituals (e.g., "wedding," "Solstice," "interview," "brothers' circle"). Do not include: Emotional states, common actions, relationship terms, or general experiences. Output a flat comma-separated list (Up to 8 terms max).
-
-6. **DELETION ANALYSIS** - For creative content:
-   - KEEP all music/creative recordings unless they are clearly test recordings or accidental captures
-   - Creative expression is valuable and should be preserved
-
-**FORMAT YOUR RESPONSE EXACTLY AS:**
-
-TITLE: [compelling title here]
-
-FORMATTED TRANSCRIPT:
-[appropriate content based on transcript quality - see instructions above]
-
-SUMMARY: [2-3 sentence summary here]
-
-TAGS: [tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8]
-
-KEYWORDS: [keyword1, keyword2, keyword3, keyword4, keyword5]
-
-DELETION_FLAG: [true/false]
-DELETION_CONFIDENCE: [high/medium/low]
-DELETION_REASON: [brief explanation]""")
-
-    # Speech/Voice Memo Processing Prompt  
-    SPEECH_ANALYSIS_PROMPT = Template("""Analyze this voice memo transcript and provide a comprehensive analysis. Please provide ALL of the following in your response:
-
-**ORIGINAL TRANSCRIPT:**
-"${transcript}"
-
-**FILENAME:** ${filename}
-
-**AUDIO CLASSIFICATION:**
-- Content Type: ${audio_type}
-- Confidence: ${confidence}
-- Top Predictions: ${top_predictions}
-
-This audio was classified as "${audio_type}" with ${confidence} confidence, indicating clear speech content.
-
-Please analyze this voice memo and provide:
-
-1. **TITLE** - Create a specific, compelling title (3-8 words) that captures the essence of the content. If the filename contains meaningful information, incorporate and improve it. Use proper Title Case capitalization.
-
-2. **FORMATTED TRANSCRIPT** - Take the transcript and improve readability by fixing grammar, typos, and format for easy human readability (appropriate punctuation, capitalization, and paragraph breaks).  
-
-3. **SUMMARY** - Create a concise 2-3 sentence summary that a human could read in 7s or less to understand the content (content_type, content_purpose, content_tone, audience, and key_insights). Write it in short hand so that's it's easy to read quickly.
-
-4. **TAGS** - Create up to 20 relevant tags (1-3 words each, Title Case, no slashes) that best describe this voice memo. Choose the most important and descriptive tags covering themes, focus areas, content types, emotional tones, and key topics. Ensure that all people, places, companies, location, and other important details are included as tags.
-
-5. **KEYWORDS** - Extract a concise list of the most important named entities and symbolic figures that someone might search for later. Extract only: People's names, Organizations/companies/institutions, Cities or specific places, Symbolic figures/metaphors/archetypes (e.g., "lion," "chief," "fire," "mother wound"), Named events or rituals (e.g., "wedding," "Solstice," "interview," "brothers' circle"). Do not include: Emotional states, common actions, relationship terms, or general experiences. Output a flat comma-separated list (Up to 8 terms max).
-
-6. **DELETION ANALYSIS** - Determine if this should be flagged for deletion based on these criteria:
-   
-   FLAG FOR DELETION if content appears to be:
-   - Content recorded for someone else (profile responses, team communications, role explanations)
-   - Addressing others directly ("Hey team", explanation mode for external audience)
-   - Draft/recording for other platforms (preparation for emails, messages, posts)
-   
-   KEEP if content is:
-   - Personal reflections, insights, spiritual/emotional processing
-   - Inner dialogue or self-compassion work
-   - Contemplative thoughts without clear external audience
-   - Creative ideas, vision work, meaningful experiences
-   - First-person introspective processing
-
-**IMPORTANT:** ALWAYS provide the processed content regardless of deletion flag. The deletion analysis is separate from content processing.
-
-**FORMAT YOUR RESPONSE EXACTLY AS:**
-
-TITLE: [compelling title here]
-
-PROCESSED_CONTENT:
-[improved transcript here - just the formatted text, no additional commentary]
-
-SUMMARY: [2-3 sentence summary here]
-
-TAGS: [tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8]
-
-KEYWORDS: [keyword1, keyword2, keyword3, keyword4, keyword5]
-
-DELETION_FLAG: [true/false]
-DELETION_CONFIDENCE: [high/medium/low]
-DELETION_REASON: [brief explanation]""")
-
-    # Fallback prompt for unknown/unclassified audio
-    UNKNOWN_ANALYSIS_PROMPT = Template("""Analyze this voice memo transcript. The audio classification was uncertain.
-
-**ORIGINAL TRANSCRIPT:**
-"${transcript}"
-
-**FILENAME:** ${filename}
-
-**AUDIO CLASSIFICATION:**
-- Content Type: ${audio_type}
-- Confidence: ${confidence}
-
-Please analyze this content and provide:
-
-1. **TITLE** - Create a compelling title based on the content and filename. Use proper Title Case capitalization.
-
-2. **PROCESSED_CONTENT** - Improve readability by fixing grammar, typos, and formatting while preserving ALL original ideas, words, and meaning. If the content appears to be garbled music, note that appropriately.
-
-3. **SUMMARY** - Create a concise 2-3 sentence summary that a human could read in 7s or less to understand the content (content_type, content_purpose, content_tone, audience, and key_insights). Write it in short hand so that's it's easy to read quickly.
-
-4. **TAGS** - Create up to 20 relevant tags (1-3 words each, Title Case, no slashes) that best describe this voice memo. Choose the most important and descriptive tags covering themes, focus areas, content types, emotional tones, and key topics. Ensure that all people, places, companies, location, and other important details are included as tags.
-
-5. **KEYWORDS** - Extract a concise list of the most important named entities and symbolic figures that someone might search for later. Extract only: People's names, Organizations/companies/institutions, Cities or specific places, Symbolic figures/metaphors/archetypes (e.g., "lion," "chief," "fire," "mother wound"), Named events or rituals (e.g., "wedding," "Solstice," "interview," "brothers' circle"). Do not include: Emotional states, common actions, relationship terms, or general experiences. Output a flat comma-separated list (Up to 8 terms max).
-
-6. **DELETION ANALYSIS** - Apply appropriate criteria based on content type.
-
-**FORMAT YOUR RESPONSE EXACTLY AS:**
+- Triggering forgotten memories
+- Revealing patterns in thinking/behavior
+- Providing emotional comfort during difficult times
+- Inspiring future creative work"""
+    
+    TAGS_INSTRUCTION_BLOCK = """**TAGS** - Create up to 20 relevant tags (1-3 words each, Title Case, no slashes) that best describe this voice memo. Choose the most important and descriptive tags covering themes, focus areas, content types, emotional tones, and key topics. Ensure that all people, places, companies, location, and other important details are included as tags."""
+    
+    KEYWORDS_INSTRUCTION_BLOCK = """**KEYWORDS** - Extract a concise list of the most important named entities and symbolic figures that someone might search for later. Extract only: People's names, Organizations/companies/institutions, Cities or specific places, Symbolic figures/metaphors/archetypes (e.g., "lion," "chief," "fire," "mother wound"), Named events or rituals (e.g., "wedding," "Solstice," "interview," "brothers' circle"). Do not include: Emotional states, common actions, relationship terms, or general experiences. Output a flat comma-separated list (Up to 8 terms max)."""
+    
+    SUMMARY_INSTRUCTION_BLOCK = """**SUMMARY** - Create a concise 2-3 sentence summary that a human could read in 7s or less to understand the content (content_type, content_purpose, content_tone, audience, and key_insights). Write it in short hand so that's it's easy to read quickly."""
+    
+    STANDARD_OUTPUT_FORMAT = """**FORMAT YOUR RESPONSE EXACTLY AS:**
 
 TITLE: [compelling title here]
 
@@ -159,9 +53,103 @@ TAGS: [tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8]
 
 KEYWORDS: [keyword1, keyword2, keyword3, keyword4, keyword5]
 
-DELETION_FLAG: [true/false]
-DELETION_CONFIDENCE: [high/medium/low]
-DELETION_REASON: [brief explanation]""")
+DELETION_FLAG: [KEEP/DELETE]
+DELETION_REASON: [brief explanation of your reasoning]"""
+    
+    # Music/Creative Content Processing Prompt
+    MUSIC_ANALYSIS_PROMPT = Template(f"""Analyze this audio file that has been classified as music/creative content. Please provide ALL of the following in your response:
+
+**ORIGINAL TRANSCRIPT:**
+"${{transcript}}"
+
+**FILENAME:** ${{filename}}
+
+**AUDIO CLASSIFICATION:**
+- Content Type: ${{audio_type}}
+- Confidence: ${{confidence}}
+- Top Predictions: ${{top_predictions}}
+
+**IMPORTANT:** This audio was classified as "${{audio_type}}" with ${{confidence}} confidence. The transcript above may be garbled, repetitive, or nonsensical because this is a musical recording without clear vocals.
+
+Please analyze this creative content and provide:
+
+1. **TITLE** - Create a compelling title based on the filename and any discernible content. If the filename has meaningful information, use and improve it. Use proper Title Case capitalization.
+
+2. **PROCESSED CONTENT** - Since this is a music file:
+   - If the transcript is garbled/repetitive (like "24 24 24" or nonsensical patterns): Replace with "No transcript available - this is a music file without clear vocals"
+   - If the transcript has some recognizable lyrics/words: Provide those lyrics cleaned up, noting "Partial lyrics from music file:"
+   - If completely unclear: "No transcript available - this is an instrumental music file"
+
+3. {SUMMARY_INSTRUCTION_BLOCK}
+
+4. {TAGS_INSTRUCTION_BLOCK}
+
+5. {KEYWORDS_INSTRUCTION_BLOCK}
+
+6. {DELETION_ANALYSIS_BLOCK}
+
+{STANDARD_OUTPUT_FORMAT}""")
+
+    # Speech/Voice Memo Processing Prompt  
+    SPEECH_ANALYSIS_PROMPT = Template(f"""Analyze this voice memo transcript and provide a comprehensive analysis. Please provide ALL of the following in your response:
+
+**ORIGINAL TRANSCRIPT:**
+"${{transcript}}"
+
+**FILENAME:** ${{filename}}
+
+**AUDIO CLASSIFICATION:**
+- Content Type: ${{audio_type}}
+- Confidence: ${{confidence}}
+- Top Predictions: ${{top_predictions}}
+
+This audio was classified as "${{audio_type}}" with ${{confidence}} confidence, indicating clear speech content.
+
+Please analyze this voice memo and provide:
+
+1. **TITLE** - Create a specific, compelling title (3-8 words) that captures the essence of the content. If the filename contains meaningful information, incorporate and improve it. Use proper Title Case capitalization.
+
+2. **FORMATTED TRANSCRIPT** - Take the transcript and improve readability by fixing grammar, typos, and format for easy human readability (appropriate punctuation, capitalization, and paragraph breaks).  
+
+3. {SUMMARY_INSTRUCTION_BLOCK}
+
+4. {TAGS_INSTRUCTION_BLOCK}
+
+5. {KEYWORDS_INSTRUCTION_BLOCK}
+
+6. {DELETION_ANALYSIS_BLOCK}
+
+**IMPORTANT:** ALWAYS provide the processed content regardless of deletion flag. The deletion analysis is separate from content processing.
+
+{STANDARD_OUTPUT_FORMAT}""")
+
+    # Fallback prompt for unknown/unclassified audio
+    UNKNOWN_ANALYSIS_PROMPT = Template(f"""Analyze this voice memo transcript. The audio classification was uncertain.
+
+**ORIGINAL TRANSCRIPT:**
+"${{transcript}}"
+
+**FILENAME:** ${{filename}}
+
+**AUDIO CLASSIFICATION:**
+- Content Type: ${{audio_type}}
+- Confidence: ${{confidence}}
+
+Please analyze this content and provide:
+
+1. **TITLE** - Create a compelling title based on the content and filename. Use proper Title Case capitalization.
+
+2. **PROCESSED_CONTENT** - Improve readability by fixing grammar, typos, and formatting while preserving ALL original ideas, words, and meaning. If the content appears to be garbled music, note that appropriately.
+
+3. {SUMMARY_INSTRUCTION_BLOCK}
+
+4. {TAGS_INSTRUCTION_BLOCK}
+
+5. {KEYWORDS_INSTRUCTION_BLOCK}
+
+6. {DELETION_ANALYSIS_BLOCK}
+
+{STANDARD_OUTPUT_FORMAT}""")
 
     # Transcript Formatting Prompt - for formatting-only operations
     TRANSCRIPT_FORMAT_PROMPT = Template("""Format this transcript for better readability while preserving ALL original content.

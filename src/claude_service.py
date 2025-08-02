@@ -332,7 +332,7 @@ class ClaudeService:
                 result["claude_tags"]["keywords"] = line_stripped.replace("KEYWORDS:", "").strip()
             elif line_stripped.startswith("DELETION_FLAG:"):
                 flag_value = line_stripped.replace("DELETION_FLAG:", "").strip().lower()
-                result["deletion_analysis"]["should_delete"] = flag_value == 'true'
+                result["deletion_analysis"]["should_delete"] = flag_value == 'delete'
             elif line_stripped.startswith("DELETION_CONFIDENCE:"):
                 result["deletion_analysis"]["confidence"] = line_stripped.replace("DELETION_CONFIDENCE:", "").strip().lower()
             elif line_stripped.startswith("DELETION_REASON:"):
