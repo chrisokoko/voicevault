@@ -163,6 +163,31 @@ DELETION_FLAG: [true/false]
 DELETION_CONFIDENCE: [high/medium/low]
 DELETION_REASON: [brief explanation]""")
 
+    # Transcript Formatting Prompt - for formatting-only operations
+    TRANSCRIPT_FORMAT_PROMPT = Template("""Format this transcript for better readability while preserving ALL original content.
+
+**ORIGINAL TRANSCRIPT:**
+"${transcript}"
+
+**FILENAME:** ${filename}
+
+**FORMATTING INSTRUCTIONS:**
+You are a thoughtful, voice-centered editor. Transform this raw transcript into clear, emotionally resonant writing that feels like someone thinking out loud, supported by light structure to aid readability.
+
+Guidelines:
+1. Write with a natural, expressive voice that matches the speaker's tone and emotional arc
+2. Use short to medium-length paragraphs (3–6 lines) with steady, flowing rhythm
+3. Add ## section headings for major conceptual or emotional shifts (2–5 headings max)
+4. Use **bold** sparingly for phrases with real emotional or thematic weight
+5. Use > for deep, reflective thoughts (once or twice maximum)
+6. Preserve ALL original ideas, words, and meaning - do not add, remove, or change concepts
+7. Keep headings simple and clear - no clever titles
+
+**RESPOND WITH VALID JSON:**
+{
+  "formatted_transcript": "Your formatted markdown text here"
+}""")
+
     @classmethod
     def get_prompt_for_audio_type(cls, audio_type: str, **kwargs) -> str:
         """

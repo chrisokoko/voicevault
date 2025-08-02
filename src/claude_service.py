@@ -149,10 +149,9 @@ class ClaudeService:
             "😴 Low Energy": "Tired, depleted, sluggish, withdrawn, unmotivated"
         }
 
-    # PHASE 1 FUNCTIONS
 
-    def process_transcript_complete(self, transcript: str, filename: str = '', audio_type: str = None, audio_classification: Dict = None) -> Dict[str, Any]:
-        """Single comprehensive Claude API call to get everything we need from a transcript"""
+    def _analyze_transcript(self, transcript: str, filename: str = '', audio_type: str = None, audio_classification: Dict = None) -> Dict[str, Any]:
+        """Private method for analyzing transcript content without formatting"""
         try:
             # Get the appropriate prompt template based on audio type
             prompt = get_analysis_prompt(
@@ -162,9 +161,12 @@ class ClaudeService:
                 audio_classification=audio_classification
             )
             
-            response = self.client.messages.create(
-                model="claude-3-5-sonnet-20241022",
-                max_tokens=3000,  # Increased for comprehensive response
+            # Use streaming for Claude Sonnet 4 to handle long operations
+            response_chunks = []
+            
+            with self.client.messages.stream(
+                model="claude-sonnet-4-20250514",
+                max_tokens=64000,  # Maximum output tokens for Claude Sonnet 4
                 temperature=0.3,  # Balanced for creativity and consistency
                 messages=[
                     {
@@ -172,12 +174,108 @@ class ClaudeService:
                         "content": prompt
                     }
                 ]
-            )
+            ) as stream:
+                for text in stream.text_stream:
+                    response_chunks.append(text)
             
-            response_text = response.content[0].text
-            logger.info(f"Comprehensive transcript analysis complete: {len(response_text)} characters")
+            response_text = ''.join(response_chunks).strip()
+            logger.info(f"Transcript analysis complete: {len(response_text)} characters")
             
             return self._parse_comprehensive_response(response_text)
+            
+        except Exception as e:
+            logger.error(f"Error in transcript analysis: {e}")
+            return {
+                "title": filename or "Voice Memo",
+                "formatted_transcript": transcript,
+                "summary": "",
+                "claude_tags": {
+                    "tags": "",
+                    "keywords": ""
+                },
+                "deletion_analysis": {
+                    'should_delete': False,
+                    'confidence': 'low',
+                    'reason': 'Analysis error'
+                }
+            }
+
+    def _format_transcript(self, transcript: str, filename: str = '') -> str:
+        """Private method for formatting transcript content only"""
+        try:
+            from config.prompts import PromptTemplates
+            
+            # Create prompt using the new formatting template
+            prompt = PromptTemplates.TRANSCRIPT_FORMAT_PROMPT.substitute(
+                transcript=transcript,
+                filename=filename
+            )
+            
+            # Use streaming for Claude Sonnet 4 to handle long operations
+            response_chunks = []
+            
+            with self.client.messages.stream(
+                model="claude-sonnet-4-20250514",
+                max_tokens=64000,  # Maximum output tokens for Claude Sonnet 4
+                temperature=0.2,  # Lower temperature for consistent formatting
+                messages=[
+                    {
+                        "role": "user", 
+                        "content": prompt
+                    }
+                ]
+            ) as stream:
+                for text in stream.text_stream:
+                    response_chunks.append(text)
+            
+            response_text = ''.join(response_chunks).strip()
+            
+            # Parse JSON response from formatting prompt
+            try:
+                import json
+                # Find JSON in the response
+                json_start = response_text.find('{')
+                json_end = response_text.rfind('}') + 1
+                
+                if json_start == -1 or json_end == 0:
+                    raise json.JSONDecodeError("No JSON found in response", response_text, 0)
+                
+                json_str = response_text[json_start:json_end]
+                result = json.loads(json_str)
+                
+                formatted_transcript = result.get('formatted_transcript', '')
+                if formatted_transcript:
+                    logger.info(f"Transcript formatting complete: {len(formatted_transcript)} characters")
+                    return formatted_transcript
+                else:
+                    logger.warning("No formatted_transcript found in JSON response")
+                    return transcript
+                    
+            except json.JSONDecodeError as e:
+                logger.warning(f"Could not parse JSON from formatting response: {e}")
+                return transcript
+            
+        except Exception as e:
+            logger.error(f"Error in transcript formatting: {e}")
+            return transcript  # Return original if formatting fails
+
+    def process_transcript_complete(self, transcript: str, filename: str = '', audio_type: str = None, audio_classification: Dict = None) -> Dict[str, Any]:
+        """Complete transcript processing using two-step approach: analysis + formatting"""
+        try:
+            # Step 1: Analyze transcript (title, summary, tags, deletion analysis)
+            logger.info("🤖 Step 1: Analyzing transcript content...")
+            analysis_result = self._analyze_transcript(transcript, filename, audio_type, audio_classification)
+            
+            # Step 2: Format transcript separately for better quality
+            logger.info("🤖 Step 2: Formatting transcript...")
+            formatted_transcript = self._format_transcript(transcript, filename)
+            
+            # Combine results maintaining the same API
+            result = analysis_result.copy()
+            result['formatted_transcript'] = formatted_transcript
+            
+            logger.info(f"✅ Two-step transcript processing complete")
+            return result
             
         except Exception as e:
             logger.error(f"Error in comprehensive transcript processing: {e}")

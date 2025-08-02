@@ -10,6 +10,7 @@ import json
 import time
 import hashlib
 import asyncio
+import re
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from notion_client import Client, AsyncClient
@@ -407,10 +408,36 @@ class NotionService:
 
     # CONTENT AND FORMATTING FUNCTIONS
     
+    def _markdown_to_notion_blocks(self, markdown_text: str) -> List[Dict]:
+        """Convert Markdown text to Notion blocks using md2notionpage library"""
+        try:
+            from md2notionpage.core import parse_md
+            
+            # Use the library's parser to convert markdown to notion blocks  
+            blocks = parse_md(markdown_text)
+            logger.info(f"Converted markdown to {len(blocks)} Notion blocks")
+            return blocks
+            
+        except ImportError as e:
+            logger.error(f"md2notionpage library not available: {e}")
+            raise ImportError("md2notionpage library is required for markdown conversion. Install with: pip install md2notionpage")
+        except Exception as e:
+            logger.error(f"Error converting markdown to blocks: {e}")
+            raise RuntimeError(f"Failed to convert markdown to Notion blocks: {e}")
+
     def _build_page_content(self, transcript: str, original_transcript: Optional[str], claude_tags: Dict[str, str]) -> List[Dict]:
         """Build page content blocks with transcript and analysis"""
-        children = [
-            {
+        children = []
+        
+        # Convert formatted transcript from markdown to Notion blocks
+        try:
+            transcript_blocks = self._markdown_to_notion_blocks(transcript)
+            children.extend(transcript_blocks)
+            logger.info(f"Added {len(transcript_blocks)} formatted transcript blocks")
+        except Exception as e:
+            logger.error(f"Failed to convert transcript markdown: {e}")
+            # Add a header to indicate the issue
+            children.append({
                 "object": "block",
                 "type": "heading_2",
                 "heading_2": {
@@ -418,37 +445,35 @@ class NotionService:
                         {
                             "type": "text",
                             "text": {
-                                "content": "Formatted Transcript"
-                            }
-                        }
-                    ]
-                }
-            }
-        ]
-        
-        # Split transcript into chunks of 2000 characters (Notion's paragraph limit)
-        chunk_size = 2000
-        
-        for i in range(0, len(transcript), chunk_size):
-            chunk = transcript[i:i + chunk_size]
-            children.append({
-                "object": "block",
-                "type": "paragraph",
-                "paragraph": {
-                    "rich_text": [
-                        {
-                            "type": "text",
-                            "text": {
-                                "content": chunk
+                                "content": "Formatted Transcript (Markdown conversion failed)"
                             }
                         }
                     ]
                 }
             })
+            raise
+        
+        
+        # Add blank line before divider
+        children.append({
+            "object": "block",
+            "type": "paragraph",
+            "paragraph": {
+                "rich_text": []
+            }
+        })
+        
+        # Add divider before original transcript section
+        children.append({
+            "object": "block",
+            "type": "divider",
+            "divider": {}
+        })
         
         # Add original transcript in a toggle if provided
         if original_transcript and original_transcript != transcript:
             toggle_children = []
+            chunk_size = 2000  # Notion's paragraph limit
             for i in range(0, len(original_transcript), chunk_size):
                 chunk = original_transcript[i:i + chunk_size]
                 toggle_children.append({
