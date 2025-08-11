@@ -176,6 +176,130 @@ Guidelines:
   "formatted_transcript": "Your formatted markdown text here"
 }""")
 
+    # Semantic Fingerprinting Prompt - for extracting cognitive DNA from insights
+    SEMANTIC_FINGERPRINTING_PROMPT = Template("""You are an expert at analyzing insights and extracting their essential cognitive DNA. Your task is to read text document and extract its semantic fingerprint according to the schema below.
+
+## Input
+
+A text document (may contain filler words, incomplete sentences, stream-of-consciousness thinking)
+
+## Output Format
+
+Return a JSON object with the following structure and fields:
+
+```python
+{
+  "core_exploration": {
+    "central_question": "The fundamental inquiry driving this insight",
+    "key_tension": "The productive contradiction being reconciled", 
+    "breakthrough_moment": "The specific realization that shifted understanding",
+    "edge_of_understanding": "What they recognize they haven't figured out yet"
+  },
+  "conceptual_dna": [
+    "2-4 essential concept-patterns that capture core wisdom",
+    "Should be quotable standalone insights"
+  ],
+  "pattern_signature": {
+    "thinking_style": ["array of thinking styles from taxonomy"],
+    "insight_type": "category from taxonomy",
+    "development_stage": "maturity level from taxonomy",
+    "confidence_level": 0.0-1.0
+  },
+  "bridge_potential": {
+    "domains_connected": ["array of domains from taxonomy"],
+    "novel_synthesis": "unique combination being created",
+    "cross_domain_pattern": "universal principle that transcends domains"
+  },
+  "genius_indicators": {
+    "uniqueness_score": 0.0-1.0,
+    "depth_score": 0.0-1.0,
+    "generative_potential": 0.0-1.0,
+    "framework_emergence": 0.0-1.0
+  },
+  "raw_essence": "2-3 sentences capturing core insight in natural language",
+  "embedding_text": "concentrated keywords optimized for similarity search"
+}
+```
+
+## Taxonomies to Use
+
+**Thinking Styles** (can select multiple):
+analytical-linear, systems-holistic, embodied-somatic, narrative-temporal, metaphorical-associative, dialectical-synthetic, intuitive-emergent, experimental-iterative
+
+**Insight Types** (select one):
+observation, methodology, framework, philosophy, synthesis, theory, question, distinction
+
+**Development Stages** (select one):
+noticing, exploring, developing, breakthrough, integrating, refining, applying, teaching
+
+**Domains** (select relevant ones):
+personal_practice, relationships, health_wellness, spirituality, business_strategy, leadership, organizational, career, artistic, design, innovation, systems_thinking, psychology, philosophy, science, community, education, social_change, culture
+
+## Detailed Scoring Instructions
+
+**Confidence Level (0.0-1.0)**
+Start with 0.5 baseline, then adjust:
+
+- Add 0.3 for expressions of strong certainty and conviction in the insight
+- Add 0.2 for use of definitive, absolute language about the discovery
+- Subtract 0.3 for expressions of uncertainty, doubt, or tentative exploration
+- Subtract 0.2 for hesitation or acknowledgment of unclear understanding
+Final score = clamp between 0.0-1.0
+
+**Uniqueness Score (0.0-1.0)**
+Start with 0.0, then add:
+
+- +0.4 if challenges or contradicts widely accepted conventional wisdom
+- +0.3 if bridges domains that are rarely connected in novel ways
+- +0.3 if introduces genuinely original methodology, metaphor, or perspective
+Maximum 1.0
+
+**Depth Score (0.0-1.0)**
+Base score by level of understanding demonstrated:
+
+- 0.2 - Surface observation of phenomena
+- 0.4 - Recognition of patterns and relationships
+- 0.6 - Understanding of underlying mechanisms and causation
+- 0.8 - Articulation of fundamental principles
+- 1.0 - Recognition of meta-principles and recursive patterns
+
+Additional depth indicators:
+
+- Add 0.1 if explains underlying causation rather than just correlation
+- Add 0.1 if addresses root causes rather than surface symptoms
+- Add 0.1 if recognizes self-referential or recursive dynamics
+Maximum 1.0
+
+**Generative Potential (0.0-1.0)**
+Start with 0.0, then add:
+
+- +0.3 if opens new avenues of inquiry (poses questions that weren't obvious before, identifies unexplored possibilities)
+- +0.3 if suggests actionable exploration (proposes ways to test, validate, or further develop the insight)
+- +0.4 if introduces genuinely novel perspective or framework that could spawn new thinking
+Maximum 1.0
+
+**Framework Emergence (0.0-1.0)**
+Start with 0.0, then add:
+
+- +0.3 if demonstrates systematic organization (coherent structure that others could follow)
+- +0.3 if articulates replicable process (describes methodology that could be applied elsewhere)
+- +0.4 if reaches teachable clarity (insight is developed enough that someone could learn and apply it)
+Maximum 1.0
+
+## Analysis Guidelines
+
+- Look beneath surface content - What deeper question is really being explored?
+- Identify productive tensions - What paradox or contradiction drives creative energy?
+- Find the breakthrough - What specific realization shifted understanding?
+- Recognize thinking patterns - How is this person processing information?
+- Assess domain bridging - What previously unconnected areas are being linked?
+- Extract quotable wisdom - What could stand alone as valuable insight?
+
+Read the transcript carefully and extract its semantic fingerprint following this schema exactly.
+
+**Text Document:**
+${insight}""")
+
     @classmethod
     def get_prompt_for_audio_type(cls, audio_type: str, **kwargs) -> str:
         """

@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Memo Clustering Report</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            background: #ecf0f1;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        h3 {
+            color: #7f8c8d;
+            background: #fff;
+            padding: 8px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0 10px 0;
+        }
+        .cluster {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .memo {
+            background: #f8f9fa;
+            border-left: 3px solid #3498db;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .memo-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .central-question {
+            color: #8e44ad;
+            font-style: italic;
+            margin: 5px 0;
+        }
+        .summary {
+            color: #555;
+            margin-top: 5px;
+        }
+        .stats {
+            background: #3498db;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            border-bottom: 2px solid #3498db;
+        }
+        .tab {
+            padding: 10px 20px;
+            background: #ecf0f1;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+            transition: background 0.3s;
+        }
+        .tab:hover {
+            background: #d5dbdd;
+        }
+        .tab.active {
+            background: #3498db;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .cluster-size {
+            background: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+    </style>
+    <script>
+        function showTab(tabIndex) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById('tab-' + tabIndex).classList.add('active');
+            document.getElementById('tab-btn-' + tabIndex).classList.add('active');
+        }
+    </script>
+</head>
+<body>
+    <h1>🎯 Voice Memo Clustering Analysis</h1>
+    <div class="stats">
+        <strong>Total Memos:</strong> 75 | 
+        <strong>Generated:</strong> 2025-08-09 16:13:36
+    </div>
+    
+<div class="tabs">
+<button class="tab active" id="tab-btn-1" onclick="showTab(1)">
+23 Clusters</button>
+<button class="tab " id="tab-btn-2" onclick="showTab(2)">
+16 Clusters</button>
+<button class="tab " id="tab-btn-3" onclick="showTab(3)">
+31 Clusters</button>
+<button class="tab " id="tab-btn-4" onclick="showTab(4)">
+67 Clusters</button>
+<button class="tab " id="tab-btn-5" onclick="showTab(5)">
+38 Clusters</button>
+</div>
+<div class="tab-content active" id="tab-1">
+<h2>Configuration: 23 Clusters</h2>
+<p><strong>Quality Score:</strong> -0.182 | 
+<strong>Distance Threshold:</strong> 0.539</p>
+<div class="cluster">
+<h3>Cluster 22
+<span class="cluster-size">7 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 NW Quimby St 30</div>
+<div class="central-question">❓ What type of love do I deserve and how do I recognize it when I find it?</div>
+<div class="central-question">⚡ The contradiction between giving deeply while receiving little, knowing I'm a pleaser yet struggling to set boundaries</div>
+<div class="summary">The profound question of what love we deserve intersects with recognizing when we're pouring into misaligned partnerships. Self-awareness of pleasing patterns doesn't automatically create boundary-setting capacity, revealing the gap between knowing and embodying change.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Bengal Cir 2</div>
+<div class="central-question">❓ How do I establish a trustworthy relationship with my own emotional self?</div>
+<div class="central-question">⚡ The paradox of being both the protector and the one needing protection within oneself</div>
+<div class="summary">True self-care begins with making an explicit promise of safety and non-abandonment to one's own heart. This reframes the relationship with our emotional self as requiring the same conscious commitment we would offer to a beloved other.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 ‎Audio Message from Laura Riley</div>
+<div class="central-question">❓ How do we move toward love and connection despite the protective mechanisms of fear?</div>
+<div class="central-question">⚡ The simultaneous experience of deep desire for connection and protective heart-clenching fear</div>
+<div class="summary">True intimacy happens when we feel both the heart's desire to open and its protective clenching, then choose to lean into connection anyway. All our complex words about relationship ultimately point to one simple truth: Love.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Bengal Cir 4</div>
+<div class="central-question">❓ How do we offer ourselves the tenderness and care we most deeply need?</div>
+<div class="central-question">⚡ The paradox between our adult complexity and our inner child's need for simple, repeated comfort</div>
+<div class="summary">True healing happens when we speak directly to our most tender parts with simple, repeated acknowledgment. The profound wisdom lies not in complexity but in the gentle mantra offered to our vulnerable inner heart.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 SE Second Ave</div>
+<div class="central-question">❓ How do I cope with the overwhelming need for external validation while trapped in destructive patterns?</div>
+<div class="central-question">⚡ The desire for worthiness and connection versus the impulse to numb and escape through destructive behaviors</div>
+<div class="summary">A raw moment of recognizing how the body holds emotional truth about validation-seeking and numbing patterns. The physical sensations reveal what the mind struggles to process - the desperate need to feel chosen and worthy driving destructive coping behaviors.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Song: Dance with me sample</div>
+<div class="central-question">❓ How do we navigate the vulnerability of authentic connection and invitation?</div>
+<div class="central-question">⚡ The risk between opening oneself to deep connection versus protecting against potential rejection</div>
+<div class="summary">True invitation in relationship requires the courage to offer both depth and choice while maintaining your own elevated state. It's about being simultaneously grounded in commitment and free in spirit, creating space for authentic connection without attachment to outcome.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 NW Quimby St 28</div>
+<div class="central-question">❓ How do we bridge the gap between our vision of who we can become and the repetitive patterns that keep us stuck?</div>
+<div class="central-question">⚡ The paradox between having clear vision of our potential while simultaneously being trapped in familiar limiting patterns</div>
+<div class="summary">The insight recognizes that people often have clear vision of their potential but remain trapped in repetitive limiting patterns. The breakthrough is designing a systematic approach that combines diagnostic assessment with experiential intervention to bridge this gap between aspiration and reality.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 15
+<span class="cluster-size">6 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 University of Oregon Portland</div>
+<div class="central-question">❓ What untold stories from our parents hold irreplaceable wisdom that will be lost forever if we don't actively seek them out?</div>
+<div class="central-question">⚡ The urgency of capturing disappearing stories versus the assumption that we already know our parents' experiences</div>
+<div class="summary">This insight recognizes that even our closest relationships contain unexplored depths - there's always one more story our parents haven't shared that could change everything. It transforms story-gathering from passive assumption to active, urgent practice before these irreplaceable narratives are lost forever.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 University of Oregon Portland 5</div>
+<div class="central-question">❓ How do we honor and preserve the irreplaceable stories of those we've lost?</div>
+<div class="central-question">⚡ The painful recognition of lost opportunity versus the sacred responsibility to preserve what remains</div>
+<div class="summary">The author transforms personal regret about lost conversations with their grandmother into a universal call to preserve and share the stories of our elders before they disappear forever. This shifts grief from passive suffering into active cultural stewardship.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 University of Oregon Portland 2</div>
+<div class="central-question">❓ How do we bridge the gap between generations through the stories our mothers carry?</div>
+<div class="central-question">⚡ The longing to know our mothers as full human beings versus the limited stories we actually receive</div>
+<div class="summary">Stories serve as bridges between generations, but we must ask intentional questions to access the deeper narratives that reveal our mothers as complete human beings. The quality of our questions determines the depth of intergenerational connection and understanding we can achieve.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 University of Oregon Portland 3</div>
+<div class="central-question">❓ What profound wisdom and experience dies with our loved ones when their stories remain untold?</div>
+<div class="central-question">⚡ The simultaneous presence and absence of stories that exist but remain unshared</div>
+<div class="summary">A single question about untold stories can carry more weight than any answer, revealing how silence itself becomes a container for profound meaning. The recognition that our loved ones carry entire worlds of unshared experience points to both loss and the urgent beauty of story-sharing while we can.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 5724 NE 60th Ave 35</div>
+<div class="central-question">❓ How can we preserve and access the lived experiences of past generations in their authentic voice?</div>
+<div class="central-question">⚡ The desire to connect with ancestral wisdom versus the irreversible loss of personal stories through time</div>
+<div class="summary">What if we could hear our ancestors tell their own stories in their own voices, sharing intimate experiences of love, growth, and life lessons? This vision imagines technology enabling direct access to humanity's most important personal narratives across generations.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Thoughts on 7 generations </div>
+<div class="central-question">❓ How can humans practically connect with the infinite chain of ancestors and descendants when our minds are limited?</div>
+<div class="central-question">⚡ The need to honor all generations versus human cognitive limitations in comprehending infinity</div>
+<div class="summary">The 'seven generations' principle in ancestral traditions isn't the actual scope of our responsibility - it's a cognitive accommodation that helps humans grasp infinite intergenerational connection. Sacred numbers often serve as training wheels for truths too vast for ordinary comprehension.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 7
+<span class="cluster-size">6 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 Immersive Therapies 3</div>
+<div class="central-question">❓ What actually drives people to commit to wellness services beyond surface-level marketing?</div>
+<div class="central-question">⚡ The contradiction between selling treatments/spaces versus selling human connection</div>
+<div class="summary">The key to wellness business success isn't showcasing beautiful spaces or treatments during tours - it's getting people physically present and connecting them with spectacular facilitators. Human connection, not facility features, drives conversion.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Immersive Therapies 4</div>
+<div class="central-question">❓ How can authentic transformation experiences become the foundation for organic growth?</div>
+<div class="central-question">⚡ Balancing genuine care for healing with the practical need for business growth through referrals</div>
+<div class="summary">The most powerful marketing for transformational services comes from people who have experienced the transformation themselves. A simple referral system that removes friction and relies on authentic human connection can scale healing work more effectively than traditional advertising approaches.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 NW Quimby St 21</div>
+<div class="central-question">❓ How do we design experiences that generate organic referrals and sustainable growth?</div>
+<div class="central-question">⚡ Balancing experiential investment with measurable business outcomes</div>
+<div class="summary">The key to sustainable growth lies in designing 'epic experiences' that naturally generate referrals, but success requires measuring both outreach effectiveness and referral conversion rates. Multi-day retreats in unique settings may create the depth of engagement needed for organic word-of-mouth.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 How to make decisions on who to work with</div>
+<div class="central-question">❓ How do I quickly identify partners who will genuinely add value versus those who are just selling?</div>
+<div class="central-question">⚡ The contradiction between traditional sales approaches (pitch first) and what actually builds trust (educate first)</div>
+<div class="summary">The best business partners reveal themselves in the first two minutes by making you curious about their knowledge rather than impressed by their credentials. True expertise manifests as education-first approaches that build trust through demonstrated competence rather than traditional sales pitches.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 I-5 S</div>
+<div class="central-question">❓ How do we build a business that serves the right people in the right way while optimizing operations?</div>
+<div class="central-question">⚡ Balancing authentic service (only building what we're uniquely qualified for) with business opportunity</div>
+<div class="summary">True business success comes from serving only where you're uniquely qualified, then using deep client understanding to eliminate operational friction. Replace repetitive processes with rich storytelling that connects people more authentically.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Rehuman: pillar that you feel in. We’re creating people that have the same amount of passion for creating an amazing life, not people that are all doing the same thing </div>
+<div class="central-question">❓ How can we guide people toward transformation while honoring their individual paths and authentic expression?</div>
+<div class="central-question">⚡ The need to provide structure and guidance versus the imperative to preserve individual authenticity and passion</div>
+<div class="summary">True transformation happens through passionate authentic engagement, not conformity to prescribed methods. The facilitator's role is to kindle individual fire, not enforce uniform practice. We're creating passionate humans, not identical practitioners.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 20
+<span class="cluster-size">5 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 Lucky Labrador 2</div>
+<div class="central-question">❓ How to appropriately acknowledge communication and express gratitude</div>
+<div class="central-question">⚡ Balancing brevity with adequate appreciation</div>
+<div class="summary">A simple, direct acknowledgment of received communication paired with genuine gratitude. The insight lies in recognizing that basic human courtesy and appreciation can be expressed efficiently while maintaining warmth.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 University of Oregon Portland 53</div>
+<div class="central-question">❓ How do I maintain meaningful connections when life's demands create distance?</div>
+<div class="central-question">⚡ The pull between honoring important relationships and managing overwhelming life transitions</div>
+<div class="summary">The speaker realizes that acknowledging their overwhelm and setting clear expectations for reconnection is more honoring to an important relationship than continued silence. They're learning to communicate boundaries while maintaining connection during intense life transitions.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Rehuman </div>
+<div class="central-question">❓ How do we create lasting connection and community that extends beyond peak experiences?</div>
+<div class="central-question">⚡ The inevitable fade of peak experiences versus the desire for sustained community connection</div>
+<div class="summary">Peak experiences need intentional aftercare systems that acknowledge the vulnerable 'morning after' feeling and provide ongoing reminders that community support continues. The real community building happens not during the high, but in the tender space afterward when people feel the absence and need reassurance they're not alone.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Lydia</div>
+<div class="central-question">❓ How do we maintain connection and inclusion while honoring authentic fit and boundaries?</div>
+<div class="central-question">⚡ The need to make selective decisions while preserving relationship and community belonging</div>
+<div class="summary">This demonstrates a sophisticated approach to community building that creates multiple tiers of belonging, allowing for selective inner circles while maintaining inclusive outer circles. The key insight is that rejection can be immediately transformed into invitation when we design layered community structures.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Audio Message</div>
+<div class="central-question">❓ How do we practice assertiveness while maintaining care and consideration for others?</div>
+<div class="central-question">⚡ The balance between advocating for personal needs and protecting others from unintended consequences</div>
+<div class="summary">The speaker demonstrates how to practice assertive boundary-setting by being transparent about consequences for both parties, showing that true assertiveness includes care for the other person's business interests while still advocating for their own needs.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 13
+<span class="cluster-size">5 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 New Recording 13</div>
+<div class="central-question">❓ What does it mean to fully embody and express pure joy and readiness?</div>
+<div class="central-question">⚡ The contrast between restrained social expression and uninhibited celebration of life</div>
+<div class="summary">Pure joy and enthusiasm can be expressed without justification or external reason. The repetitive affirmation of elevated states ('I lay my head on high') creates embodied transcendence through simple, authentic expression.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Song: instrumental looped</div>
+<div class="central-question">❓ How does non-verbal expression communicate what words cannot?</div>
+<div class="central-question">⚡ The paradox of profound communication through absence of language</div>
+<div class="summary">Pure instrumental expression can communicate profound truths that transcend the limitations of language, creating emotional and reflective spaces through melody and rhythm alone. This suggests that meaning-making operates through multiple channels beyond verbal articulation.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 5724 NE 60th Ave 9</div>
+<div class="central-question">❓ How do chord progressions create emotional and harmonic movement?</div>
+<div class="central-question">⚡ Between repetitive patterns and subtle variations that create musical interest</div>
+<div class="summary">A chord progression exploring movement between A minor as home base, with D minor creating tension and C providing transitional color. The pattern suggests cyclical return with subtle variations.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Shbang: song from earth practice </div>
+<div class="central-question">❓ How can repetitive vocal expression become a bridge between inner longing and natural connection?</div>
+<div class="central-question">⚡ The contrast between raw, extended vocal expression and structured poetic language</div>
+<div class="summary">Extended vocal expression and repetitive chanting can serve as a mantric practice that allows deeper aspects of consciousness to emerge, particularly when connected to natural imagery and longing. The practice involves allowing raw sound to bridge inner states with external connection.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Song: instrumental looped </div>
+<div class="central-question">❓ How does music communicate meaning that transcends verbal language?</div>
+<div class="central-question">⚡ The paradox between wordless expression and profound communication</div>
+<div class="summary">Music communicates through a pure language of melody and rhythm that speaks directly to the soul, achieving profound connection without words. This suggests that the deepest human communication often transcends verbal expression entirely.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 14
+<span class="cluster-size">4 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 The PATH Center</div>
+<div class="central-question">❓ How do we embody and live our mythic stories rather than just tell them?</div>
+<div class="central-question">⚡ The contradiction between verbal storytelling and somatic embodiment of narrative</div>
+<div class="summary">True mythic storytelling happens not through words but through embodied movement and presence. By creating playful constraints that force us beyond verbal expression, we can access deeper layers of narrative that live in our bodies and transform us from passive listeners into active participants in our own becoming.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Wallflower Coffee Company 6</div>
+<div class="central-question">❓ How can we create spaces for authentic human connection through structured deep conversation?</div>
+<div class="central-question">⚡ Balancing structured guidance with organic emotional expression in group settings</div>
+<div class="summary">The Deep Dark Library has discovered that storytelling becomes transformational when audiences can communicate back to storytellers in real-time, creating bidirectional healing conversations rather than one-way performances. This methodology combines thematic structure with circling techniques to create 'solid ground' for deeper vulnerability.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 NE 52nd Ave 3</div>
+<div class="central-question">❓ How can we translate the essence of a live, immersive storytelling experience into a portable, accessible game format?</div>
+<div class="central-question">⚡ Preserving the depth and magic of in-person library events while making them scalable and home-accessible</div>
+<div class="summary">The creator has developed a method to capture the essence of live storytelling events in a card-based game format, allowing community experiences to be brought into people's homes. This represents a systematic approach to translating immersive experiences into portable, scalable formats.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 University of Oregon Portland 10</div>
+<div class="central-question">❓ How can we systematically access and share the transformative stories that shape who we are?</div>
+<div class="central-question">⚡ The paradox between the deeply private nature of our formative experiences and the need to make them accessible for connection and understanding</div>
+<div class="summary">Humans are living libraries containing organized collections of transformative experiences. By providing structured tools - identifying the life domain, the specific transformative event, and props for storytelling - we can help people access and share the deep stories that shaped them.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 11
+<span class="cluster-size">4 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 5724 NE 60th Ave 114</div>
+<div class="central-question">❓ Is the audio recording system functioning properly?</div>
+<div class="central-question">⚡ The need for technical verification versus meaningful content creation</div>
+<div class="summary">This represents a methodical approach to technical verification through repetitive testing. The systematic repetition of 'check' demonstrates an experimental methodology for ensuring audio recording functionality before proceeding with substantive content.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 5724 NE 60th Ave 6</div>
+<div class="central-question">❓ How do I optimize audio capture for clear communication?</div>
+<div class="central-question">⚡ Balancing proximity to mouth versus speaker for optimal sound quality</div>
+<div class="summary">Someone systematically testing microphone placement options to optimize audio quality, comparing proximity to mouth versus speaker positioning through direct experimentation.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 New Recording 15</div>
+<div class="central-question">❓ How does my voice sound when recorded and played back?</div>
+<div class="central-question">⚡ The gap between internal voice perception and external audio reality</div>
+<div class="summary">A simple experiment in self-perception through voice recording, representing the universal human curiosity about how we appear to others versus how we experience ourselves internally.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 University of Oregon Portland 6</div>
+<div class="central-question">❓ Is the recording system functioning properly?</div>
+<div class="central-question">⚡ The need for technical verification versus the repetitive nature of testing</div>
+<div class="summary">This is a technical sound check using repetitive vocal testing to establish proper audio recording levels. The systematic repetition represents a foundational preparation step before meaningful content creation.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 18
+<span class="cluster-size">4 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 Religion is just a model, not a path (studying without doing is pointless)</div>
+<div class="central-question">❓ How can we distinguish between religious forms and the actual spiritual journey they're meant to facilitate?</div>
+<div class="central-question">⚡ The paradox between needing structured practices while recognizing that no single religious framework is universally correct</div>
+<div class="summary">Religion should be understood as a practical model for spiritual development rather than an end in itself. The key is engaging in actual practices rather than just studying them, recognizing that each person must find their own authentic path to their highest self regardless of religious framework.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Bagel Land</div>
+<div class="central-question">❓ How can leaders regularly dissolve ego to serve their communities and connect with divine purpose?</div>
+<div class="central-question">⚡ The paradox of leadership requiring both personal authority and complete ego dissolution</div>
+<div class="summary">True leadership requires creating ceremonial spaces where leaders regularly dissolve their egos to reconnect with divine purpose and remember that serving the people and mission matters more than personal pride. This happens through councils that emphasize beauty, art, and sacred connection with nature.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 5724 NE 60th Ave 14</div>
+<div class="central-question">❓ How can ancient wisdom and tribal structures be adapted for modern people seeking authentic connection and guidance?</div>
+<div class="central-question">⚡ The gap between timeless truth and contemporary accessibility - honoring ancient wisdom while making it relevant to modern life</div>
+<div class="summary">The insight recognizes that modern people need updated versions of ancient tribal structures and rites of passage. This involves translating timeless wisdom into accessible contemporary forms while preserving the essential truth and transformative power of traditional practices.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Serving Your Divine Path</div>
+<div class="central-question">❓ How does one access and act upon divine wisdom through spiritual surrender?</div>
+<div class="central-question">⚡ The paradox of closing the mind to open the spirit - shutting down rational faculties to access higher knowing</div>
+<div class="summary">True spiritual wisdom comes through the paradox of divine servanthood - closing the rational mind to open a direct portal to universal knowing, then embodying that wisdom through action. The process is simple: ask, listen, and do the work.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 8
+<span class="cluster-size">4 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 NE 21st Ave</div>
+<div class="central-question">❓ How do we structure human resources to optimize both service delivery and operational sustainability?</div>
+<div class="central-question">⚡ Balancing intensive service delivery with necessary preparation and integration work</div>
+<div class="summary">Effective team structure requires balancing active service delivery with preparation time, while geographic resource focus can create operational coherence. The insight is that facilitators need dedicated non-delivery time built into their workflow for sustainable performance.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Dave's Hot Chicken</div>
+<div class="central-question">❓ How do we balance ethical shortcuts with mission-driven progress when resources are scarce?</div>
+<div class="central-question">⚡ The need to move fast with limited resources versus maintaining originality and ethical boundaries</div>
+<div class="summary">Early-stage ventures need ethical shortcuts to survive, and the key decision framework is simple: does it cause harm, and does it serve the mission? Success might even be measured by creating problems worth having - like being noticed enough to get sued.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 New Recording 14</div>
+<div class="central-question">❓ How do we balance growth and autonomy when building both a company and community?</div>
+<div class="central-question">⚡ The inherent conflict between scaling organizational systems and preserving individual/community autonomy</div>
+<div class="summary">After seven years of experience, the fundamental challenge in building Odyssey is navigating the tension between growth and autonomy across both company and community dimensions. This dual-building challenge requires a strategic framework that honors both scaling needs and preserving individual/community self-determination.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 The Midtown</div>
+<div class="central-question">❓ How can we build strategic networks to scale local initiatives nationally?</div>
+<div class="central-question">⚡ Balancing individual specialized expertise with collaborative network building</div>
+<div class="summary">Strategic network building emerges when you identify original supporters who can bridge different initiatives and connect practitioners across domains. The key is recognizing that individual expertise becomes exponentially more powerful when woven into intentional collaborative networks.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 16
+<span class="cluster-size">3 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 A little insecure sometimes:it’s normal</div>
+<div class="central-question">❓ How do we normalize and process the universal experience of insecurity?</div>
+<div class="central-question">⚡ The contradiction between insecurity feeling intensely personal yet being universally shared</div>
+<div class="summary">This explores the profound therapeutic power of normalizing insecurity as a universal human experience. The repetitive, almost mantra-like quality suggests that the very act of stating 'it's normal' repeatedly can help process and integrate difficult emotions that feel overwhelmingly real.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Midnight library - pitch  </div>
+<div class="central-question">❓ How do we transform the isolation of our deepest struggles into shared wisdom and connection?</div>
+<div class="central-question">⚡ The paradox between universal human suffering and the shame-driven isolation that prevents us from accessing collective wisdom</div>
+<div class="summary">Human suffering is universal but shame keeps us isolated from the collective wisdom of those who've faced similar struggles. By systematically collecting and organizing humanity's lessons, we can transform individual darkness into shared light while honoring each person's unique journey.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Midnight library - pitch </div>
+<div class="central-question">❓ How can humanity's collective wisdom be made accessible to individuals wrestling with life's deepest questions?</div>
+<div class="central-question">⚡ The contradiction between universal human struggles and the isolation we experience when facing them alone</div>
+<div class="summary">The Midnight Library concept recognizes that while everyone struggles with deep existential questions in isolation, the wisdom to address these questions already exists within humanity's collective experience. The breakthrough is creating a systematic way to catalog and freely share this wisdom, acknowledging that there are multiple valid paths rather than one-size-fits-all solutions.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 10
+<span class="cluster-size">3 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 NW Quimby St 26</div>
+<div class="central-question">❓ How to define and position my professional services as a growth marketing leader</div>
+<div class="central-question">⚡ Between tactical execution and strategic leadership in growth marketing</div>
+<div class="summary">A growth marketing professional is defining their role as spanning both strategic campaign management and team leadership across multiple marketing channels. They're in the early stages of articulating their comprehensive service offering.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Wallflower Coffee Company 17</div>
+<div class="central-question">❓ What does the concentration of lead sources reveal about our business model and growth strategy?</div>
+<div class="central-question">⚡ Heavy dependence on a single channel versus diversified acquisition strategy</div>
+<div class="summary">The key insight from Odyssey's 2024 review is recognizing that 70% of leads coming from Google ads isn't just a performance metric - it's a critical signal about business dependency and risk concentration that demands strategic attention.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 NE Cully Blvd</div>
+<div class="central-question">❓ How should client relationships be structured and managed through different stages of engagement?</div>
+<div class="central-question">⚡ Managing the transition from potential leads to committed clients while maintaining systematic organization</div>
+<div class="summary">Client relationship management requires distinct pipeline structures for different engagement phases. The pre-client phase represents a separate system with its own stages, starting from lead generation through consultation booking.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 3
+<span class="cluster-size">3 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 Information architecture thoughts </div>
+<div class="central-question">❓ How should emerging brands structure their entire information ecosystem - from website architecture to content distribution - to effectively serve different personas and use cases?</div>
+<div class="central-question">⚡ The balance between persona-specific organization versus universal content distribution, and between owned platforms versus third-party channels</div>
+<div class="summary">The challenge isn't just organizing website content, but designing an entire information ecosystem that serves different personas through various use cases while strategically distributing content across owned and third-party platforms. The best companies approach this systematically, considering how content flows from creation through organization to multi-channel distribution.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 5724 NE 60th Ave 71</div>
+<div class="central-question">❓ How can we streamline content creation by removing friction from the capture process?</div>
+<div class="central-question">⚡ The conflict between perfectionism in initial expression versus rapid information capture</div>
+<div class="summary">The key insight is to completely separate the capture phase from the refinement phase in content creation - use voice recording to dump raw thoughts without worrying about structure or wording, then leverage AI to transform the messy transcript into polished content.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 5724 NE 60th Ave 113</div>
+<div class="central-question">❓ How do we create AI systems that see beyond surface appearances to reveal the hidden architecture of digital entities?</div>
+<div class="central-question">⚡ The contradiction between automated analysis and the need for deeply nuanced, human-level insight that cuts through digital facades</div>
+<div class="summary">The insight recognizes that AI analysis systems must transcend surface-level pattern matching to achieve surgical specificity in revealing the hidden operational reality of digital entities. This requires building systems that can penetrate facades and cut to 'what's really going on' rather than producing bland, generic observations.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 12
+<span class="cluster-size">3 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 New Recording 7</div>
+<div class="central-question">❓ What meaning can be extracted from cryptic symbolic notation?</div>
+<div class="central-question">⚡ The gap between encoded information and interpretable insight</div>
+<div class="summary">This document presents encoded notation that resists standard semantic analysis, highlighting the fundamental challenge of extracting meaning from unfamiliar symbolic systems. It demonstrates the limits of interpretation when context and decoding keys are absent.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 5724 NE 60th Ave 115</div>
+<div class="central-question">❓ What meaning can be extracted from minimal or repetitive content?</div>
+<div class="central-question">⚡ The challenge of finding insight where none appears to exist</div>
+<div class="summary">This document contains only repetitive characters without substantive content. It represents an absence of insight rather than a developed thought or exploration.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 New Recording 8</div>
+<div class="central-question">❓ What is the significance or meaning of 'SO3 all and'?</div>
+<div class="central-question">⚡ The gap between cryptic expression and intended meaning</div>
+<div class="summary">A cryptic fragment 'SO3 all and' that appears to be either an incomplete thought, technical notation, or the beginning of a larger idea that remains unexpressed.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 17
+<span class="cluster-size">3 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 Sauna rehab pitch</div>
+<div class="central-question">❓ How do we transform and integrate life's experiences through witnessed vulnerability?</div>
+<div class="central-question">⚡ The balance between individual processing and communal support in healing</div>
+<div class="summary">Sonna Rehab creates transformational healing through a structured combination of somatic practices (cold breath, song) culminating in witnessed confession. The methodology recognizes that being seen in our truth by community creates powerful containers for integrating life experiences.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 NE 75th Ave</div>
+<div class="central-question">❓ How can we create spaces for authentic human connection and transformation through embodied, communal experiences?</div>
+<div class="central-question">⚡ The contrast between artificial stimulation (alcohol, screams) and natural transformation (sweat, song, movement)</div>
+<div class="summary">A vision for spaces of authentic human connection where transformation happens through simple embodied practices - sweating, singing, dancing - in community. The magic emerges not from artificial stimulation but from returning to fundamental human experiences of shared presence and movement.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 University of Oregon Portland 30</div>
+<div class="central-question">❓ How can different social structures create distinct pathways to connection and transformation?</div>
+<div class="central-question">⚡ Balancing individual autonomy with guided experience and community belonging</div>
+<div class="summary">A bathhouse framework that recognizes three distinct modes of human connection - community celebration, guided transformation, and personal ritual - each requiring different social structures within the same sacred space. The insight is that the sauna can serve as both stage and sanctuary, adapting its energetic container to serve different human needs for connection and growth.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 6
+<span class="cluster-size">2 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 Immersive Therapies 2</div>
+<div class="central-question">❓ How can I establish my professional identity as a solo practitioner?</div>
+<div class="central-question">⚡ Between individual practice and collaborative facilitation methodology</div>
+<div class="summary">S.A. Hall identifies as a solo Simon facilitator, representing a focused professional practice in specialized facilitation methodology. This suggests an individual approach to delivering what may traditionally be group-oriented services.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Immersive Therapies</div>
+<div class="central-question">❓ How does one define their professional identity in the simplest terms?</div>
+<div class="central-question">⚡ The balance between brevity and meaningful self-description</div>
+<div class="summary">A person identifies themselves professionally as a 'civil facilitator' - suggesting a role focused on enabling constructive dialogue and process rather than authority or expertise. This represents a functional rather than hierarchical view of professional identity.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 9
+<span class="cluster-size">2 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 5724 NE 60th Ave 76</div>
+<div class="central-question">❓ How do I structure and organize my creative ideas into a compelling podcast pitch?</div>
+<div class="central-question">⚡ Between having a clear concept and needing to translate it into a persuasive format</div>
+<div class="summary">The speaker is developing a systematic approach to podcast pitching by combining their conceptual overview with proven formatting from previous successful pitches. They recognize that creative ideas need strategic structure to become compelling proposals.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 University of Oregon Portland 42</div>
+<div class="central-question">❓ How to effectively communicate an evolved business model for underutilized retreat centers and community spaces?</div>
+<div class="central-question">⚡ Balancing established pitch elements with new revenue model insights</div>
+<div class="summary">Business model evolution requires selective updating of pitch materials, preserving what works while integrating new revenue insights. The challenge is maintaining coherence between established opportunity/solution frameworks and evolved monetization strategies.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 19
+<span class="cluster-size">2 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 Continental Hardwood</div>
+<div class="central-question">❓ How do we navigate housing transitions when community relationships break down?</div>
+<div class="central-question">⚡ Balancing community standards with individual needs during difficult departures</div>
+<div class="summary">Community housing situations reveal how relationship breakdowns create opportunities for others, but require careful management of transition timelines. The two-month departure window suggests communities develop structured processes for managing difficult exits while maintaining stability.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 5724 NE 60th Ave 104</div>
+<div class="central-question">❓ How do I navigate professional uncertainty while maintaining integrity and purpose?</div>
+<div class="central-question">⚡ Balancing personal evaluation needs with organizational commitment during a trial period</div>
+<div class="summary">Professional commitment should be measured by contribution quality rather than duration certainty. The highest integrity approach during evaluation periods is maintaining dedication to organizational improvement while preserving honest assessment space.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 0
+<span class="cluster-size">2 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 NW Quimby St 5</div>
+<div class="central-question">❓ How do financial incentives drive behavior and business outcomes?</div>
+<div class="central-question">⚡ Between top-down revenue targets and bottom-up individual motivation</div>
+<div class="summary">A $200 incentive creates universal motivation that drives referral behavior. This connects individual psychological triggers to top-down business revenue planning.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 La Yucateca</div>
+<div class="central-question">❓ How does payment flexibility through buy-now-pay-later options quantitatively impact conversion rates, especially for high-value purchases?</div>
+<div class="central-question">⚡ The gap between customer desire for expensive products and their immediate purchasing power versus payment constraints</div>
+<div class="summary">The inquiry focuses on quantifying how buy-now-pay-later options affect conversion rates, with particular interest in whether this payment flexibility has amplified impact on high-ticket sales compared to standard e-commerce transactions.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 1
+<span class="cluster-size">2 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 Lucky Labrador 6</div>
+<div class="central-question">❓ What is the minimum viable outcome that would justify this partnership investment?</div>
+<div class="central-question">⚡ The tension between partnership complexity and simple, measurable success criteria</div>
+<div class="summary">Partnership decisions become clear when you identify the single outcome that would make everything worthwhile. This person realized their partnership's entire value hinges on achieving $20k monthly income working remotely less than 20 hours per week.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 Lucky Labrador 7</div>
+<div class="central-question">❓ How can I design a business that maximizes both financial freedom and lifestyle autonomy?</div>
+<div class="central-question">⚡ The conventional trade-off between high income and minimal time investment</div>
+<div class="summary">The ultimate business goal transcends pure profit to encompass complete autonomy over time, work, and future direction. Success means achieving $20K monthly profit while working less than 20 hours per week, fully remote—creating a life of designed freedom rather than just financial achievement.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 21
+<span class="cluster-size">2 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 5724 NE 60th Ave 78</div>
+<div class="central-question">❓ What are we doing with our lives and how did we lose our way?</div>
+<div class="central-question">⚡ The gap between meaningful living and mindless drifting through modern routines</div>
+<div class="summary">Modern life has gradually hijacked our attention and energy, replacing meaningful activities like deep conversation and authentic connection with shallow digital substitutes, leaving us drifting unconsciously through routines that don't serve our deeper needs.</div>
+</div>
+<div class="memo">
+<div class="memo-title">📝 University of Oregon Portland 47</div>
+<div class="central-question">❓ How do we transition from passive drifting through life to active steering and intentional living?</div>
+<div class="central-question">⚡ The contradiction between our desire for agency and our tendency to fall into unconscious, repetitive patterns</div>
+<div class="summary">Many people unconsciously drift into passive patterns of living, caught in endless loops of digital consumption and routine obligations, while haunted by past choices. The key insight is recognizing the moment we stopped actively steering our lives and began merely floating through them.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 2
+<span class="cluster-size">1 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 Eastside Coffee Bar & Workspace 6</div>
+<div class="central-question">❓ How do I calculate net worth when assets generate income that changes their effective value?</div>
+<div class="central-question">⚡ Static asset valuation versus dynamic cash flow generation in wealth assessment</div>
+<div class="summary">The person is grappling with how to properly calculate net worth when one major asset (rental property) generates income that covers its own costs, recognizing this fundamentally changes the traditional debt-to-asset equation.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 4
+<span class="cluster-size">1 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 Message to Liam </div>
+<div class="central-question">❓ Where to get a quality haircut based on trusted recommendation</div>
+<div class="central-question">⚡ Current dissatisfaction with appearance versus desire for improvement</div>
+<div class="summary">A straightforward request for haircut recommendations based on observed good results, motivated by critical feedback about current appearance. Represents basic social learning through imitation of successful examples.</div>
+</div>
+</div>
+<div class="cluster">
+<h3>Cluster 5
+<span class="cluster-size">1 memos</span></h3>
+<div class="memo">
+<div class="memo-title">📝 University of Oregon Portland 51</div>
+<div class="central-question">❓ How can we help the 60% of people for whom traditional depression treatments fail?</div>
+<div class="central-question">⚡ The contradiction between widespread treatment failure and the promise of breakthrough results from a single session</div>
+<div class="summary">A new treatment protocol backed by 60+ clinical trials from top institutions offers hope for the 60% of people with treatment-resistant depression, providing transformative results in single sessions without prescriptions or referrals. This represents a paradigm shift toward accessible, evidence-based mental health intervention.</div>
+</div>
+</div>
+</div>
+<div class="tab-content " id="tab-2">
+<h2>Configuration: 16 Clusters</h2>
+<p><strong>Quality Score:</strong> -0.193 | 
+<strong>Distance Threshold:</strong> 0.621</p>
+<p><em>Detailed clustering for this configuration would require recalculation.</em></p>
+<p>Showing cluster size distribution:</p>
+</div>
+<div class="tab-content " id="tab-3">
+<h2>Configuration: 31 Clusters</h2>
+<p><strong>Quality Score:</strong> -0.238 | 
+<strong>Distance Threshold:</strong> 0.454</p>
+<p><em>Detailed clustering for this configuration would require recalculation.</em></p>
+<p>Showing cluster size distribution:</p>
+</div>
+<div class="tab-content " id="tab-4">
+<h2>Configuration: 67 Clusters</h2>
+<p><strong>Quality Score:</strong> -0.282 | 
+<strong>Distance Threshold:</strong> 0.235</p>
+<p><em>Detailed clustering for this configuration would require recalculation.</em></p>
+<p>Showing cluster size distribution:</p>
+</div>
+<div class="tab-content " id="tab-5">
+<h2>Configuration: 38 Clusters</h2>
+<p><strong>Quality Score:</strong> -0.304 | 
+<strong>Distance Threshold:</strong> 0.414</p>
+<p><em>Detailed clustering for this configuration would require recalculation.</em></p>
+<p>Showing cluster size distribution:</p>
+</div>
+
+</body>
+</html>

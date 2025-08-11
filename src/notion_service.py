@@ -211,7 +211,8 @@ class NotionService:
                    audio_duration: Optional[float] = None,
                    deletion_analysis: Optional[Dict] = None,
                    original_transcript: Optional[str] = None,
-                   content_type: Optional[str] = None) -> Optional[str]:
+                   content_type: Optional[str] = None,
+                   semantic_fingerprint: Optional[Dict] = None) -> Optional[str]:
         """Create a new page in the Notion database with the voice memo data"""
         try:
             # Extract audio metadata
@@ -297,6 +298,105 @@ class NotionService:
                     "checkbox": deletion_analysis.get('should_delete', False) if deletion_analysis else False
                 },
             }
+            
+            # Add semantic fingerprint fields if available
+            if semantic_fingerprint:
+                # Core exploration fields
+                core_exploration = semantic_fingerprint.get('core_exploration', {})
+                properties.update({
+                    "Central Question": {
+                        "rich_text": [{"text": {"content": core_exploration.get('central_question', '')}}]
+                    } if core_exploration.get('central_question') else None,
+                    "Key Tension": {
+                        "rich_text": [{"text": {"content": core_exploration.get('key_tension', '')}}]
+                    } if core_exploration.get('key_tension') else None,
+                    "Breakthrough Moment": {
+                        "rich_text": [{"text": {"content": core_exploration.get('breakthrough_moment', '')}}]
+                    } if core_exploration.get('breakthrough_moment') else None,
+                    "Edge of Understanding": {
+                        "rich_text": [{"text": {"content": core_exploration.get('edge_of_understanding', '')}}]
+                    } if core_exploration.get('edge_of_understanding') else None,
+                })
+                
+                # Pattern signature fields
+                pattern_signature = semantic_fingerprint.get('pattern_signature', {})
+                thinking_styles = pattern_signature.get('thinking_style', [])
+                if thinking_styles:
+                    properties["Thinking Styles"] = {
+                        "multi_select": [{"name": style} for style in thinking_styles]
+                    }
+                
+                properties.update({
+                    "Insight Type": {
+                        "select": {"name": pattern_signature.get('insight_type', 'observation')}
+                    } if pattern_signature.get('insight_type') else None,
+                    "Development Stage": {
+                        "select": {"name": pattern_signature.get('development_stage', 'noticing')}
+                    } if pattern_signature.get('development_stage') else None,
+                    "Confidence Level": {
+                        "number": pattern_signature.get('confidence_level', 0.0)
+                    },
+                })
+                
+                # Bridge potential fields
+                bridge_potential = semantic_fingerprint.get('bridge_potential', {})
+                connected_domains = bridge_potential.get('domains_connected', [])
+                if connected_domains:
+                    properties["Connected Domains"] = {
+                        "multi_select": [{"name": domain} for domain in connected_domains]
+                    }
+                
+                properties.update({
+                    "Novel Synthesis": {
+                        "rich_text": [{"text": {"content": bridge_potential.get('novel_synthesis', '')}}]
+                    } if bridge_potential.get('novel_synthesis') else None,
+                    "Cross Domain Pattern": {
+                        "rich_text": [{"text": {"content": bridge_potential.get('cross_domain_pattern', '')}}]
+                    } if bridge_potential.get('cross_domain_pattern') else None,
+                })
+                
+                # Genius indicators
+                genius_indicators = semantic_fingerprint.get('genius_indicators', {})
+                properties.update({
+                    "Uniqueness Score": {
+                        "number": genius_indicators.get('uniqueness_score', 0.0)
+                    },
+                    "Depth Score": {
+                        "number": genius_indicators.get('depth_score', 0.0)
+                    },
+                    "Generative Potential": {
+                        "number": genius_indicators.get('generative_potential', 0.0)
+                    },
+                    "Framework Emergence": {
+                        "number": genius_indicators.get('framework_emergence', 0.0)
+                    },
+                    "Average Genius Score": {
+                        "number": sum([
+                            genius_indicators.get('uniqueness_score', 0.0),
+                            genius_indicators.get('depth_score', 0.0),
+                            genius_indicators.get('generative_potential', 0.0),
+                            genius_indicators.get('framework_emergence', 0.0)
+                        ]) / 4
+                    },
+                })
+                
+                # Raw essence and embedding text
+                properties.update({
+                    "Raw Essence": {
+                        "rich_text": [{"text": {"content": semantic_fingerprint.get('raw_essence', '')}}]
+                    } if semantic_fingerprint.get('raw_essence') else None,
+                    "Embedding Keywords": {
+                        "rich_text": [{"text": {"content": semantic_fingerprint.get('embedding_text', '')}}]
+                    } if semantic_fingerprint.get('embedding_text') else None,
+                })
+                
+                # Conceptual DNA as a formatted rich text field
+                conceptual_dna = semantic_fingerprint.get('conceptual_dna', [])
+                if conceptual_dna:
+                    dna_text = "\n".join([f"• {concept}" for concept in conceptual_dna])
+                    properties["Conceptual DNA"] = {
+                        "rich_text": [{"text": {"content": dna_text}}]
+                    }
             
             # Remove None values
             properties = {k: v for k, v in properties.items() if v is not None}

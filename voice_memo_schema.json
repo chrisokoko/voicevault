@@ -49,6 +49,83 @@
     },
     "Keywords": {
       "rich_text": {}
+    },
+    "Central Question": {
+      "rich_text": {}
+    },
+    "Key Tension": {
+      "rich_text": {}
+    },
+    "Breakthrough Moment": {
+      "rich_text": {}
+    },
+    "Edge of Understanding": {
+      "rich_text": {}
+    },
+    "Thinking Styles": {
+      "multi_select": {
+        "options": []
+      }
+    },
+    "Insight Type": {
+      "select": {
+        "options": [
+          {"name": "observation", "color": "blue"},
+          {"name": "question", "color": "green"},
+          {"name": "synthesis", "color": "purple"},
+          {"name": "framework", "color": "orange"},
+          {"name": "pattern", "color": "yellow"}
+        ]
+      }
+    },
+    "Development Stage": {
+      "select": {
+        "options": [
+          {"name": "noticing", "color": "gray"},
+          {"name": "exploring", "color": "blue"},
+          {"name": "breakthrough", "color": "green"},
+          {"name": "integrating", "color": "purple"},
+          {"name": "mature", "color": "orange"}
+        ]
+      }
+    },
+    "Confidence Level": {
+      "number": {}
+    },
+    "Connected Domains": {
+      "multi_select": {
+        "options": []
+      }
+    },
+    "Novel Synthesis": {
+      "rich_text": {}
+    },
+    "Cross Domain Pattern": {
+      "rich_text": {}
+    },
+    "Uniqueness Score": {
+      "number": {}
+    },
+    "Depth Score": {
+      "number": {}
+    },
+    "Generative Potential": {
+      "number": {}
+    },
+    "Framework Emergence": {
+      "number": {}
+    },
+    "Average Genius Score": {
+      "number": {}
+    },
+    "Raw Essence": {
+      "rich_text": {}
+    },
+    "Embedding Keywords": {
+      "rich_text": {}
+    },
+    "Conceptual DNA": {
+      "rich_text": {}
     }
   }
 }

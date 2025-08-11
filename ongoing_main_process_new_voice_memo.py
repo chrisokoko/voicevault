@@ -32,6 +32,7 @@ from audio_service import AudioService
 from claude_service import ClaudeService
 from notion_service import NotionService
 from audio_classifier import YAMNetAudioClassifier
+from hidden_genius import generate_semantic_fingerprint
 from utils import validate_audio_file, clean_filename, format_duration_human
 from config.config import (
     AUDIO_FOLDER, SUPPORTED_FORMATS,
@@ -155,6 +156,33 @@ class OngoingVoiceMemoProcessor:
             logger.error(f"Error assigning bucket tags: {e}")
             return {'life_domains': [], 'focus_areas': []}
 
+    def generate_and_save_semantic_fingerprint(self, transcript: str, filename: str) -> Dict:
+        """Generate semantic fingerprint and save both locally and return for Notion"""
+        try:
+            # Generate semantic fingerprint using Claude
+            semantic_fingerprint = generate_semantic_fingerprint(transcript, self.claude_service)
+            
+            if not semantic_fingerprint:
+                logger.warning("Failed to generate semantic fingerprint")
+                return {}
+            
+            # Save locally as JSON
+            fingerprints_dir = Path("data/semantic_fingerprints")
+            fingerprints_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Use filename without extension for JSON file
+            json_filename = Path(filename).stem + ".json"
+            json_path = fingerprints_dir / json_filename
+            
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(semantic_fingerprint, f, indent=2, ensure_ascii=False)
+            
+            logger.info(f"🧠 Semantic fingerprint saved to: {json_path}")
+            return semantic_fingerprint
+            
+        except Exception as e:
+            logger.error(f"Error generating semantic fingerprint: {e}")
+            return {}
 
     def process_file(self, file_path: Path) -> bool:
         """Process a single audio file with complete pipeline"""
@@ -243,6 +271,22 @@ class OngoingVoiceMemoProcessor:
                 else:
                     logger.warning("Could not assign bucket tags")
             
+            # Step 10: Generate semantic fingerprint
+            logger.info("🧠 Generating semantic fingerprint...")
+            semantic_fingerprint = self.generate_and_save_semantic_fingerprint(formatted_transcript, file_path.name)
+            if semantic_fingerprint:
+                raw_essence = semantic_fingerprint.get('raw_essence', 'N/A')[:100] + "..." if len(semantic_fingerprint.get('raw_essence', '')) > 100 else semantic_fingerprint.get('raw_essence', 'N/A')
+                avg_genius_score = sum([
+                    semantic_fingerprint.get('genius_indicators', {}).get('uniqueness_score', 0.0),
+                    semantic_fingerprint.get('genius_indicators', {}).get('depth_score', 0.0),
+                    semantic_fingerprint.get('genius_indicators', {}).get('generative_potential', 0.0),
+                    semantic_fingerprint.get('genius_indicators', {}).get('framework_emergence', 0.0)
+                ]) / 4
+                logger.info(f"Raw essence: {raw_essence}")
+                logger.info(f"Average genius score: {avg_genius_score:.2f}")
+            else:
+                logger.warning("Failed to generate semantic fingerprint")
+            
             if self.dry_run:
                 processing_time = time.time() - file_start_time
                 self.session_stats['files_successful'] += 1
@@ -262,7 +306,7 @@ class OngoingVoiceMemoProcessor:
                 logger.info(f"  🗑️  Flagged for Deletion: {deletion_analysis['should_delete']} - {deletion_analysis['reason']}")
                 return True
             
-            # Step 10: Create comprehensive Notion page
+            # Step 11: Create comprehensive Notion page
             logger.info("📤 Creating comprehensive Notion page...")
             page_id = self.notion_service.create_page(
                 title=title,
@@ -274,11 +318,12 @@ class OngoingVoiceMemoProcessor:
                 audio_duration=metadata['duration_seconds'],
                 deletion_analysis=deletion_analysis,
                 original_transcript=transcript,
-                content_type=content_type
+                content_type=content_type,
+                semantic_fingerprint=semantic_fingerprint
             )
             
             if page_id:
-                # Step 11: Add bucket tags if available
+                # Step 12: Add bucket tags if available
                 if bucket_assignment['life_domains'] or bucket_assignment['focus_areas']:
                     logger.info("🏷️ Adding bucket tags to page...")
                     bucket_success = self.notion_service.update_page_bucket_tags_multiple(

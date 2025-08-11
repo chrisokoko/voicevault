@@ -1,0 +1,472 @@
+{
+  "method": "UMAP",
+  "parameters": {
+    "n_neighbors": 15,
+    "min_dist": 0.1,
+    "metric": "cosine"
+  },
+  "filenames": [
+    "The PATH Center.m4a",
+    "University of Oregon Portland.m4a",
+    "Lucky Labrador 2.m4a",
+    "Immersive Therapies 2.m4a",
+    "A little insecure sometimes:it’s normal.m4a",
+    "NW Quimby St 30.m4a",
+    "NW Quimby St 26.m4a",
+    "Eastside Coffee Bar & Workspace 6.m4a",
+    "New Recording 13.m4a",
+    "5724 NE 60th Ave 114.m4a",
+    "Wallflower Coffee Company 6.m4a",
+    "Information architecture thoughts .m4a",
+    "New Recording 7.m4a",
+    "5724 NE 60th Ave 115.m4a",
+    "Bengal Cir 2.m4a",
+    "5724 NE 60th Ave 76.m4a",
+    "Immersive Therapies 3.m4a",
+    "Continental Hardwood.m4a",
+    "Religion is just a model, not a path (studying without doing is pointless).m4a",
+    "5724 NE 60th Ave 6.m4a",
+    "NE 21st Ave.m4a",
+    "University of Oregon Portland 5.m4a",
+    "University of Oregon Portland 53.m4a",
+    "5724 NE 60th Ave 71.m4a",
+    "New Recording 15.m4a",
+    "Bagel Land.m4a",
+    "Sauna rehab pitch.m4a",
+    "5724 NE 60th Ave 104.m4a",
+    "‎Audio Message from Laura Riley.m4a",
+    "University of Oregon Portland 2.m4a",
+    "Rehuman .m4a",
+    "University of Oregon Portland 42.m4a",
+    "Wallflower Coffee Company 17.m4a",
+    "Immersive Therapies 4.m4a",
+    "NE 52nd Ave 3.m4a",
+    "Dave's Hot Chicken.m4a",
+    "University of Oregon Portland 3.m4a",
+    "Midnight library - pitch  .m4a",
+    "New Recording 14.m4a",
+    "5724 NE 60th Ave 113.m4a",
+    "Bengal Cir 4.m4a",
+    "NE 75th Ave.m4a",
+    "NW Quimby St 21.m4a",
+    "NW Quimby St 5.m4a",
+    "Lydia.m4a",
+    "Lucky Labrador 6.m4a",
+    "SE Second Ave.m4a",
+    "Message to Liam .m4a",
+    "Lucky Labrador 7.m4a",
+    "Song: instrumental looped.m4a",
+    "NE Cully Blvd.m4a",
+    "Audio Message.m4a",
+    "Midnight library - pitch .m4a",
+    "How to make decisions on who to work with.m4a",
+    "Immersive Therapies.m4a",
+    "Song: Dance with me sample.m4a",
+    "New Recording 8.m4a",
+    "5724 NE 60th Ave 14.m4a",
+    "NW Quimby St 28.m4a",
+    "University of Oregon Portland 6.m4a",
+    "The Midtown.m4a",
+    "5724 NE 60th Ave 9.m4a",
+    "I-5 S.m4a",
+    "Rehuman: pillar that you feel in. We’re creating people that have the same amount of passion for creating an amazing life, not people that are all doing the same thing .m4a",
+    "5724 NE 60th Ave 35.m4a",
+    "University of Oregon Portland 30.m4a",
+    "Thoughts on 7 generations .m4a",
+    "Shbang: song from earth practice .m4a",
+    "La Yucateca.m4a",
+    "University of Oregon Portland 51.m4a",
+    "5724 NE 60th Ave 78.m4a",
+    "University of Oregon Portland 10.m4a",
+    "University of Oregon Portland 47.m4a",
+    "Serving Your Divine Path.m4a",
+    "Song: instrumental looped .m4a"
+  ],
+  "titles": [
+    "The PATH Center",
+    "University of Oregon Portland",
+    "Lucky Labrador 2",
+    "Immersive Therapies 2",
+    "A little insecure sometimes:it",
+    "NW Quimby St 30",
+    "NW Quimby St 26",
+    "Eastside Coffee Bar & Workspac",
+    "New Recording 13",
+    "5724 NE 60th Ave 114",
+    "Wallflower Coffee Company 6",
+    "Information architecture thoug",
+    "New Recording 7",
+    "5724 NE 60th Ave 115",
+    "Bengal Cir 2",
+    "5724 NE 60th Ave 76",
+    "Immersive Therapies 3",
+    "Continental Hardwood",
+    "Religion is just a model, not ",
+    "5724 NE 60th Ave 6",
+    "NE 21st Ave",
+    "University of Oregon Portland ",
+    "University of Oregon Portland ",
+    "5724 NE 60th Ave 71",
+    "New Recording 15",
+    "Bagel Land",
+    "Sauna rehab pitch",
+    "5724 NE 60th Ave 104",
+    "‎Audio Message from Laura Rile",
+    "University of Oregon Portland ",
+    "Rehuman ",
+    "University of Oregon Portland ",
+    "Wallflower Coffee Company 17",
+    "Immersive Therapies 4",
+    "NE 52nd Ave 3",
+    "Dave's Hot Chicken",
+    "University of Oregon Portland ",
+    "Midnight library - pitch  ",
+    "New Recording 14",
+    "5724 NE 60th Ave 113",
+    "Bengal Cir 4",
+    "NE 75th Ave",
+    "NW Quimby St 21",
+    "NW Quimby St 5",
+    "Lydia",
+    "Lucky Labrador 6",
+    "SE Second Ave",
+    "Message to Liam ",
+    "Lucky Labrador 7",
+    "Song: instrumental looped",
+    "NE Cully Blvd",
+    "Audio Message",
+    "Midnight library - pitch ",
+    "How to make decisions on who t",
+    "Immersive Therapies",
+    "Song: Dance with me sample",
+    "New Recording 8",
+    "5724 NE 60th Ave 14",
+    "NW Quimby St 28",
+    "University of Oregon Portland ",
+    "The Midtown",
+    "5724 NE 60th Ave 9",
+    "I-5 S",
+    "Rehuman: pillar that you feel ",
+    "5724 NE 60th Ave 35",
+    "University of Oregon Portland ",
+    "Thoughts on 7 generations ",
+    "Shbang: song from earth practi",
+    "La Yucateca",
+    "University of Oregon Portland ",
+    "5724 NE 60th Ave 78",
+    "University of Oregon Portland ",
+    "University of Oregon Portland ",
+    "Serving Your Divine Path",
+    "Song: instrumental looped "
+  ],
+  "coordinates": [
+    [
+      0.838027834892273,
+      12.154516220092773
+    ],
+    [
+      0.5158560276031494,
+      13.315714836120605
+    ],
+    [
+      -1.1382300853729248,
+      10.603050231933594
+    ],
+    [
+      -0.158522829413414,
+      10.117975234985352
+    ],
+    [
+      -1.0469473600387573,
+      11.824251174926758
+    ],
+    [
+      -1.8044672012329102,
+      10.857142448425293
+    ],
+    [
+      0.15472252666950226,
+      8.938020706176758
+    ],
+    [
+      -0.3497273623943329,
+      7.9063520431518555
+    ],
+    [
+      0.904017984867096,
+      11.239602088928223
+    ],
+    [
+      2.1477036476135254,
+      10.209139823913574
+    ],
+    [
+      0.5942409038543701,
+      12.125454902648926
+    ],
+    [
+      0.469643771648407,
+      9.215869903564453
+    ],
+    [
+      1.9182045459747314,
+      11.547048568725586
+    ],
+    [
+      1.934928059577942,
+      11.133801460266113
+    ],
+    [
+      -1.5467777252197266,
+      11.06404972076416
+    ],
+    [
+      1.131239414215088,
+      9.22643756866455
+    ],
+    [
+      -0.56270432472229,
+      8.64980697631836
+    ],
+    [
+      -1.514169692993164,
+      9.987808227539062
+    ],
+    [
+      0.00021752620523329824,
+      11.3037691116333
+    ],
+    [
+      2.0799853801727295,
+      9.94757080078125
+    ],
+    [
+      0.10603900253772736,
+      9.754922866821289
+    ],
+    [
+      0.6433418393135071,
+      13.071758270263672
+    ],
+    [
+      -1.1716750860214233,
+      10.300400733947754
+    ],
+    [
+      1.706782341003418,
+      9.916289329528809
+    ],
+    [
+      2.1994686126708984,
+      10.394124984741211
+    ],
+    [
+      0.2664523422718048,
+      10.826531410217285
+    ],
+    [
+      0.12344975769519806,
+      11.854169845581055
+    ],
+    [
+      -1.0212938785552979,
+      10.048247337341309
+    ],
+    [
+      -1.6733371019363403,
+      10.970661163330078
+    ],
+    [
+      0.7799363732337952,
+      13.497793197631836
+    ],
+    [
+      -1.6442484855651855,
+      9.900036811828613
+    ],
+    [
+      0.5174108743667603,
+      8.608748435974121
+    ],
+    [
+      0.05680391564965248,
+      8.600576400756836
+    ],
+    [
+      -0.24861513078212738,
+      8.935436248779297
+    ],
+    [
+      0.6180494427680969,
+      12.48657512664795
+    ],
+    [
+      -0.37969234585762024,
+      9.320188522338867
+    ],
+    [
+      0.8919105529785156,
+      13.232965469360352
+    ],
+    [
+      -0.526295006275177,
+      12.347162246704102
+    ],
+    [
+      -0.5200477242469788,
+      9.524819374084473
+    ],
+    [
+      1.3381588459014893,
+      10.21572208404541
+    ],
+    [
+      -1.4532792568206787,
+      11.411968231201172
+    ],
+    [
+      0.6104293465614319,
+      11.6290922164917
+    ],
+    [
+      0.07651027292013168,
+      8.614338874816895
+    ],
+    [
+      -0.15023654699325562,
+      8.325726509094238
+    ],
+    [
+      -1.6454249620437622,
+      10.17834758758545
+    ],
+    [
+      -0.5930951237678528,
+      8.085115432739258
+    ],
+    [
+      -1.0599714517593384,
+      11.15470027923584
+    ],
+    [
+      -0.9431695938110352,
+      8.830077171325684
+    ],
+    [
+      -0.527554452419281,
+      8.017566680908203
+    ],
+    [
+      1.4469552040100098,
+      11.562727928161621
+    ],
+    [
+      -0.03167688846588135,
+      9.036028861999512
+    ],
+    [
+      -1.5012526512145996,
+      10.529838562011719
+    ],
+    [
+      -0.17696459591388702,
+      12.527201652526855
+    ],
+    [
+      -0.8499427437782288,
+      8.484445571899414
+    ],
+    [
+      -0.12511470913887024,
+      10.329879760742188
+    ],
+    [
+      -1.6521373987197876,
+      10.54782772064209
+    ],
+    [
+      2.0892693996429443,
+      11.595701217651367
+    ],
+    [
+      -0.05240234360098839,
+      12.656084060668945
+    ],
+    [
+      -0.3157731294631958,
+      10.821609497070312
+    ],
+    [
+      1.9408717155456543,
+      10.222869873046875
+    ],
+    [
+      -0.37414684891700745,
+      9.716348648071289
+    ],
+    [
+      1.5338236093521118,
+      11.216668128967285
+    ],
+    [
+      -0.4471159875392914,
+      8.960232734680176
+    ],
+    [
+      0.16886086761951447,
+      10.490331649780273
+    ],
+    [
+      0.33099785447120667,
+      13.101409912109375
+    ],
+    [
+      0.36847350001335144,
+      11.637460708618164
+    ],
+    [
+      0.26261481642723083,
+      13.200970649719238
+    ],
+    [
+      1.2976614236831665,
+      11.40772819519043
+    ],
+    [
+      -0.0616917610168457,
+      8.223457336425781
+    ],
+    [
+      -0.584171712398529,
+      11.721220016479492
+    ],
+    [
+      -0.3027641177177429,
+      11.344369888305664
+    ],
+    [
+      0.49301764369010925,
+      12.660439491271973
+    ],
+    [
+      -0.46928325295448303,
+      11.10116958618164
+    ],
+    [
+      -0.19140250980854034,
+      12.115675926208496
+    ],
+    [
+      1.7171494960784912,
+      11.674285888671875
+    ]
+  ],
+  "statistics": {
+    "x_min": -1.8044672012329102,
+    "x_max": 2.1994686126708984,
+    "y_min": 7.9063520431518555,
+    "y_max": 13.497793197631836,
+    "x_mean": 0.07277204841375351,
+    "y_mean": 10.644098281860352
+  }
+}
